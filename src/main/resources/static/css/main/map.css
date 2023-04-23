@@ -1,0 +1,53 @@
+.map {
+	display: flex;
+	width: 1000px;
+	height: 700px;
+}
+
+.custom_overlay {
+    position: absolute;
+    top: -460px;
+    left: -130px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(255, 255, 255);
+    border-radius: 5px;
+    padding: 5px;
+    outline: 1px solid #d8d8d8;
+    width: 250px;
+    height: 400px;
+    box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+}
+
+.custom_overlay::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid rgb(255, 255, 255);
+}
+
+.custom_overlay .imgWrapper {
+	width: 48px;
+	height: 48px;
+	overflow: hidden;
+}
+
+.custom_overlay .imgWrapper img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.custom_overlay .label {
+	font-size: 12px;
+	font-weight: bold;
+	margin-top: 3px;
+}

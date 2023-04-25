@@ -14,6 +14,7 @@ var userMarker; // 사용자 현재 위치
 var locYn = false // 사용자 위치 권한 허용 여부    true:허용  false:거부,실패
 var clusterer; // 클러스터
 var currentOverlay = null; // 현재 열려 있는 오버레이
+var currentHoverOverlay = null; // 현재 열려 있는 마우스오버 오버레이
 var markers = [];   // 마커
 
 var infowindow = new kakao.maps.InfoWindow({
@@ -102,7 +103,56 @@ function createMarker(place) {
 	kakao.maps.event.addListener(marker, 'click', function() {
 		getOverlay(place, marker);
 	});
+	
+	
+
+    kakao.maps.event.addListener(marker, 'mouseover', function() {
+        hoverOveray(1, place, marker);
+    });
+
+    kakao.maps.event.addListener(marker, 'mouseout', function() {
+        hoverOveray(0, place, marker);
+    });
 	return marker;
+}
+
+function hoverOveray(mode, place, marker){
+    
+	if(mode == 1){
+		
+		$.ajax({
+			url: '/api/get-place-rating',
+			type: 'POST',
+			data: {
+				place_id: place.id
+			},
+			success: function(data) {
+				var content = '<div class="hover-overlay">'
+							+ '<span class="title">' + place.place_name + '</span>';
+				if(data.count > 0){
+					content += '<div id="hover-rate" data-value="' + data.rating + '" data-total-stars="5" data-color="#f65e00" data-empty-color="lightgray" data-size="15px"> </div>'
+				}
+				content += '</div>';
+				    
+			    var hoverOveray = new kakao.maps.CustomOverlay({
+			        position: marker.getPosition(),
+			        content: content,
+			        map: null,
+			        yAnchor: 1.5
+			    });
+				hoverOveray.setMap(map);
+				currentHoverOveray = hoverOveray;
+				$('#hover-rate').jstars();
+			},
+			error: function(error) {
+				console.error('Error fetching place rating:', error);
+			}
+		});
+		
+	}else{
+		currentHoverOveray.setMap(null);
+		currentHoverOveray = null;
+	}
 }
 
 function getOverlay(place, marker) {
@@ -136,9 +186,8 @@ function getPlaceInfo(place, overlay) {
 		},
 		success: function(data) {
 			var imageURL = data;
-			console.log(data);
 			var content = ''
-				+ ' <div class = "custom_overlay">'
+				+ ' <div class = "custom-overlay">'
 				+ '     <div class = "title"> ' + place.place_name + ' </div>'
 				+ '     <div class = "image">'
 				+ '         <img src = "' + data.photo_list[0].orgurl + '" alt = "thumbnail" width = "80px" height = "80px">'

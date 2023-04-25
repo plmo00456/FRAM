@@ -3,7 +3,9 @@ package com.main.ApiController;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,20 +15,27 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.main.service.CommentService;
+import com.main.service.UsersService;
+import com.main.vo.Comment;
 
 @RestController
 @RequestMapping("/api")
 public class MainApiController {
 	
+	@Autowired
+	private UsersService us;
+	
+	@Autowired
+	private CommentService cs;
+	
 	@PostMapping("/get-place-info")
-	public ResponseEntity<String> GetPlaceImage(@RequestParam(value="place_id", required = false) String placeId) {
+	public ResponseEntity<String> GetPlaceInfo(@RequestParam(value="place_id", required = false) String placeId) {
 		Gson gson = new Gson();
 		JsonObject result = new JsonObject();
 		result.addProperty("status", "N");
 		
 		try {
-			System.out.println(1);
-			
 			String urlStr = "https://place.map.kakao.com/main/v/" + placeId;
 	        URL url = new URL(urlStr);
 	        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -48,7 +57,7 @@ public class MainApiController {
             result.add("photo_list", photoList);
             
 
-            // 평가 점수
+            // 카카오 평가 점수
             JsonObject rating = new JsonObject();
             try {
 	            if (data.has("comment")) {
@@ -122,6 +131,32 @@ public class MainApiController {
         } catch (Exception e) {
             e.printStackTrace();
         }
+		
+		return ResponseEntity.ok().header("Content-Type", "application/json").body(gson.toJson(result));
+	}
+	
+	@PostMapping("/get-place-rating")
+	public ResponseEntity<String> GetRating(@RequestParam(value="place_id", required = false) Integer placeId) {
+		Gson gson = new Gson();
+		JsonObject result = new JsonObject();
+		result.addProperty("status", "N");
+		
+		try {
+			List<Comment> comments = cs.getComments(placeId);
+			double rating = 0;
+			for(int i=0; i<comments.size(); i++)
+				rating += comments.get(i).getRating();
+			rating = comments.size() > 0 ? rating / comments.size() : 0; 
+			
+			JsonArray jArrayComments = gson.toJsonTree(comments).getAsJsonArray();
+			result.addProperty("count", comments.size());
+			result.addProperty("rating", rating);
+			result.add("comments", jArrayComments);
+			result.addProperty("status", "Y");
+			
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
 		
 		return ResponseEntity.ok().header("Content-Type", "application/json").body(gson.toJson(result));
 	}

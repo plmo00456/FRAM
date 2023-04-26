@@ -3,6 +3,7 @@ package com.main.ApiController;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,10 +14,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.main.service.CommentService;
 import com.main.service.UsersService;
+import com.main.utils.LocalDateTimeSerializer;
 import com.main.vo.Comment;
 
 @RestController
@@ -31,7 +34,9 @@ public class MainApiController {
 	
 	@PostMapping("/get-place-info")
 	public ResponseEntity<String> GetPlaceInfo(@RequestParam(value="place_id", required = false) Integer placeId) {
-		Gson gson = new Gson();
+		Gson gson = new GsonBuilder()
+                .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeSerializer())
+                .create();
 		JsonObject result = new JsonObject();
 		result.addProperty("status", "N");
 		
@@ -180,7 +185,9 @@ public class MainApiController {
 	
 	@PostMapping("/get-place-rating")
 	public ResponseEntity<String> GetRating(@RequestParam(value="place_id", required = false) Integer placeId) {
-		Gson gson = new Gson();
+		Gson gson = new GsonBuilder()
+                .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeSerializer())
+                .create();
 		JsonObject result = new JsonObject();
 		result.addProperty("status", "N");
 		
@@ -194,7 +201,7 @@ public class MainApiController {
 			JsonArray jArrayComments = gson.toJsonTree(comments).getAsJsonArray();
 			result.addProperty("count", comments.size());
 			result.addProperty("rating", rating);
-			result.add("comments", jArrayComments);
+			result.add("comment", jArrayComments);
 			result.addProperty("status", "Y");
 			
 		}catch(Exception e) {

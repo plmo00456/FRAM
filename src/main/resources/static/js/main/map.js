@@ -130,7 +130,7 @@ function hoverOveray(mode, place, marker){
 				var content = '<div class="hover-overlay">'
 							+ '<span class="title">' + place.place_name + '</span>';
 				if(data.count > 0){
-					content += '<div id="hover-rate" data-value="' + data.comment.rating + '" data-total-stars="5" data-color="#f65e00" data-empty-color="lightgray" data-size="15px"> </div>'
+					content += '<div id="hover-rate" data-value="' + data.rating + '" data-total-stars="5" data-color="#f65e00" data-empty-color="lightgray" data-size="15px"> </div>'
 				}
 				content += '</div>';
 				    
@@ -297,9 +297,9 @@ function getPlaceInfo(place, overlay) {
 						    + '                    <div class="top">'
 						    + '                        <div class="nickname">'
 						    + '                            <span class="rating">★' + data.comment.comments[i].rating + '</span>'
-						    + '                            <b>' + data.comment.comments[i].users.name + '</b>'
+						    + '                            <b>' + data.comment.comments[i].user.name + '</b>'
 						    + '                        </div>'
-						    + '                        <div class="dt">' + timeAgo(data.comment.commenets[i].createTm)  + '</div>'
+						    + '                        <div class="dt">' + timeAgo(data.comment.comments[i].createTm)  + '</div>'
 						    + '                    </div>'
 						    + '                    <div class="cont">'
 						    + '                        '+ data.comment.comments[i].comment

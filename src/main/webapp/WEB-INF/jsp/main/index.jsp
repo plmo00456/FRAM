@@ -11,6 +11,7 @@
     <link href="/css/main/main.css" rel="stylesheet" type="text/css" />
     <link href="/css/main/map.css" rel="stylesheet" type="text/css" />
     
+    <script src="/js/util/util.js"></script>
     <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoAppKey}&libraries=services,clusterer"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="/plugin/star-rating/jstars.js"></script>

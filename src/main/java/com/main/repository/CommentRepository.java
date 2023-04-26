@@ -10,4 +10,6 @@ import com.main.vo.Comment;
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 	List<Comment> findByPlaceId(Integer placeId);
+	
+	List<Comment> findByPlaceIdAndUserSeqIsNotNull(Integer placeId);
 }

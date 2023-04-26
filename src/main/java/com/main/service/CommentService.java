@@ -17,4 +17,8 @@ public class CommentService {
     public List<Comment> getComments(Integer placeId){
     	return commentRepository.findByPlaceId(placeId);
     }
+    
+    public List<Comment> findCommentsByPlaceIdWithUser(Integer placeId) {
+        return commentRepository.findByPlaceIdAndUserSeqIsNotNull(placeId);
+    }
 }

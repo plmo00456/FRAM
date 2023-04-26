@@ -6,7 +6,6 @@
   <head>
     <meta charset="UTF-8">
     <title>Insert title here</title>
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/font-applesdgothicneo@1.0/all.min.css">
     <script src="https://kit.fontawesome.com/790b1811b6.js" crossorigin="anonymous"></script>
     
     <link href="/css/main/main.css" rel="stylesheet" type="text/css" />
@@ -26,13 +25,11 @@
     </script>
   </head>
   <body>
-    <div id="rate" data-value="0" data-total-stars="5" data-color="#f65e00" data-empty-color="lightgray" data-size="30px"> </div>
-    <span id="rate-value">0</span>
 
     <div id="map" class="map"></div>
 
     
-    <div class="custom-overlay dev">
+<!--     <div class="custom-overlay dev">
     	<div class="top">
     		<div class = "title">
     			<span class="main-title">대성콩물</span>
@@ -74,7 +71,7 @@
 			</div>
 			<div class="opentime-container">
 				<div class="icon">
-					<i class="fa-regular fa-clock"></i>
+					<i class="fa-solid fa-clock"></i>
 				</div>
 				<div class="cont">
 					<div class="status deadline">금일영업마감</div>
@@ -88,81 +85,60 @@
 				<div class="cont">062-1111-2222</div>
 			</div>
 			<div class="comment-title">
-				<i class="fa-solid fa-comment"></i>
-				<span>후기</span>
+				<i class="fa-solid fa-face-smile"></i>
+				<div class="rate-container">
+	    			<span id="rate-value">0.0</span>
+					<div id="rate" data-value="0" data-total-stars="5" data-color="#ffb553" data-empty-color="lightgray" data-size=".9rem"> </div>
+					<span id="rate-cnt">0건</span>
+				</div>
 			</div>
 			<div class="comment-container">
+			
 				<div class="list">
 					<div class="image">
 						<img src = "http://t1.daumcdn.net/local/kakaomapPhoto/review/d71debb5f433e19c6f5d351a2de139041b45ebf3?original" alt = "thumbnail">
 					</div>
-					<div class="cont-contatiner">
+					<div class="cont-container">
 						<div class="top">
 							<div class="nickname">
-								<div class="rating" data-total-stars="5" data-color="#f65e00" data-empty-color="lightgray" data-size="12px"> </div>
+								<span class="rating">★1.1</span>
 								<b>티이모</b>
 							</div>
 							<div class="dt">10초 전</div>
 						</div>
 						<div class="cont">
-							안녕하세요.<br>반갑습니다~
+						    ㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㄴㄴㄴㄴㄴㄴㄴㄴㄴ
+						    <div class="fade-out">
+						        <button class="more-btn">더보기...</button>
+						    </div>
 						</div>
 					</div>
 				</div>
+				
 				<div class="list">
 					<div class="image">
 						<img src = "http://t1.daumcdn.net/local/kakaomapPhoto/review/d71debb5f433e19c6f5d351a2de139041b45ebf3?original" alt = "thumbnail">
 					</div>
-					<div class="cont-contatiner">
+					<div class="cont-container">
 						<div class="top">
 							<div class="nickname">
-								<div class="rating" data-total-stars="5" data-color="#f65e00" data-empty-color="lightgray" data-size="12px"> </div>
+								<span class="rating">★1.1</span>
 								<b>티이모</b>
 							</div>
 							<div class="dt">10초 전</div>
 						</div>
 						<div class="cont">
-							안녕하세요.<br>반갑습니다~
+						    ㅁ
+						    <div class="fade-out">
+						        <button class="more-btn">더보기...</button>
+						    </div>
 						</div>
 					</div>
 				</div>
-				<div class="list">
-					<div class="image">
-						<img src = "http://t1.daumcdn.net/local/kakaomapPhoto/review/d71debb5f433e19c6f5d351a2de139041b45ebf3?original" alt = "thumbnail">
-					</div>
-					<div class="cont-contatiner">
-						<div class="top">
-							<div class="nickname">
-								<div class="rating" data-total-stars="5" data-color="#f65e00" data-empty-color="lightgray" data-size="12px"> </div>
-								<b>티이모</b>
-							</div>
-							<div class="dt">10초 전</div>
-						</div>
-						<div class="cont">
-							안녕하세요.<br>반갑습니다~
-						</div>
-					</div>
-				</div>
-				<div class="list">
-					<div class="image">
-						<img src = "http://t1.daumcdn.net/local/kakaomapPhoto/review/d71debb5f433e19c6f5d351a2de139041b45ebf3?original" alt = "thumbnail">
-					</div>
-					<div class="cont-contatiner">
-						<div class="top">
-							<div class="nickname">
-								<div class="rating" data-total-stars="5" data-color="#f65e00" data-empty-color="lightgray" data-size="12px"> </div>
-								<b>티이모</b>
-							</div>
-							<div class="dt">10초 전</div>
-						</div>
-						<div class="cont">
-							안녕하세요.<br>반갑습니다~
-						</div>
-					</div>
-				</div>
+				
 			</div>
     	</div>
-	</div>
+	</div> -->
 	
 	
 	
@@ -176,6 +152,10 @@
 		    justify-content: space-between;
 		    width: 100%;
 		    margin-bottom: 5px;
+		}
+		
+		.custom-overlay .top .title .main-title{
+			font-size: 1.2rem;
 		}
 		
 		.custom-overlay .top .title .sub-title{
@@ -273,13 +253,22 @@
 	    
 	    .custom-overlay .comment-title{
 	    	margin: 5px 0;
+	    	display: flex;
+	    	align-items: center;
+	    }
+	    
+	    .custom-overlay .comment-title .rate-container{
+	    	display: flex;
+	    	margin-left: 5px;
+	    	width: 115px;
+			justify-content: space-between;
 	    }
 	    
 	    .custom-overlay .comment-container{
     	    display: flex;
 		    width: 100%;
 		    flex-direction: column;
-		    height: 150px;
+		    max-height: 150px;
 		    overflow-y: auto;
 		    margin-top: 5px;
 	    }
@@ -299,7 +288,6 @@
 		}
 		
 		.custom-overlay .comment-container .list{
-    	    height: 50px;
 		    display: flex;
 		    width: 100%;
 		    border-bottom: 1px solid #a5a5a5;
@@ -315,7 +303,7 @@
 	    
 	    .custom-overlay .comment-container .list .image{
 	    	width: 20%;
-		    height: 90%;
+		    height: 50px;
 		    display: flex;
 		    justify-content: center;
 		    align-items: center;
@@ -325,24 +313,65 @@
 	    .custom-overlay .comment-container .list .image img{
 		    width: 100%;
 	    	height: 100%;
+	    	cursor: pointer;
 	    }
 	    
-	    .custom-overlay .comment-container .list .cont-contatiner{
+	    .custom-overlay .comment-container .list .cont-container{
 	    	width:75%;
+	    	overflow: hidden;
 	    }
 	    
-	    .custom-overlay .comment-container .list .cont-contatiner .top{
+	    .custom-overlay .comment-container .list .cont-container .top{
 	    	display: flex;
 	    	justify-content: space-between;
 	    }
 	    
-	    .custom-overlay .comment-container .list .cont-contatiner .top .nickname{
+	    .custom-overlay .comment-container .list .cont-container .top .nickname{
 	    	margin-left: 5px;
 	    }
 	    
-	    .custom-overlay .comment-container .list .cont-contatiner .cont{
-	    	margin-left: 5px;
+	    .custom-overlay .comment-container .list .cont-container .top .rating{
+	    	color: #ffb553;
+	    	font-weight: 600;
 	    }
+	    
+	    .custom-overlay .comment-container .list .cont-container .cont {
+		    margin-left: 5px;
+		    position: relative;
+		    overflow: hidden;
+		    height: 35px;
+		}
+		
+		.custom-overlay .comment-container .list .cont-container .cont.more {
+			overflow: unset;
+			height: max-content;
+		}
+		
+		.custom-overlay .comment-container .list .cont-container .cont .fade-out{
+			display: none;
+		}
+		
+		.custom-overlay .comment-container .list .cont-container .cont .fade-out.show {
+		    position: absolute;
+			right: 0;
+			bottom: 0;
+			width: 31%;
+			height: .8rem;
+			display: flex;
+			justify-content: flex-end;
+			align-items: center;
+			background-image: linear-gradient(to left,#2f334a 75%, rgba(255, 255, 255, 0));
+			padding-bottom: 3px;
+		}
+		
+		.custom-overlay .comment-container .list .cont-container .cont .fade-out .more-btn {
+		    background: #2f334a;
+			color: #fff;
+			border: none;
+			font-weight: bold;
+			padding: 0;
+			cursor: pointer;
+		}
 	    
 	</style>
 	

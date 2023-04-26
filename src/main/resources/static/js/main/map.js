@@ -130,7 +130,7 @@ function hoverOveray(mode, place, marker){
 				var content = '<div class="hover-overlay">'
 							+ '<span class="title">' + place.place_name + '</span>';
 				if(data.count > 0){
-					content += '<div id="hover-rate" data-value="' + data.rating + '" data-total-stars="5" data-color="#f65e00" data-empty-color="lightgray" data-size="15px"> </div>'
+					content += '<div id="hover-rate" data-value="' + data.comment.rating + '" data-total-stars="5" data-color="#f65e00" data-empty-color="lightgray" data-size="15px"> </div>'
 				}
 				content += '</div>';
 				    
@@ -166,7 +166,7 @@ function getOverlay(place, marker) {
 	});
 
 	// 열려 있는 오버레이가 있으면 닫기
-	if (currentOverlay === customOverlay) {
+	if (currentOverlay == customOverlay) {
 		customOverlay.setMap(null);
 		currentOverlay = null;
 	} else {
@@ -187,24 +187,233 @@ function getPlaceInfo(place, overlay) {
 		success: function(data) {
 			var imageURL = data;
 			var content = ''
-				+ ' <div class = "custom-overlay">'
-				+ '     <div class = "title"> ' + place.place_name + ' </div>'
-				+ '     <div class = "image">'
-				+ '         <img src = "' + data.photo_list[0].orgurl + '" alt = "thumbnail" width = "80px" height = "80px">'
-				+ '     </div>'
-				+ ' </div>';
+					    + '<div class="custom-overlay">'
+					    + '    <div class="top">'
+					    + '        <div class="title">'
+					    + '            <span class="main-title">' + data.name + '</span>'
+					    + '            <span class="sub-title">' + data.category + '</span>'
+					    + '        </div>'
+					    + '        <div class="close-btn"><i class="fa-solid fa-xmark"></i></div>'
+					    + '    </div>'
+					    + '    <div class="content">';
+	
+				if(data.photo_list != undefined && data.photo_list.length > 0){
+				    content +=	  '        <div class="image-list">'
+			    				+ '            <div class="image-container first">';
+					if(data.photo_list.length >= 1){
+					content +=	  '                <div class="image">'
+							    + '                    <img src="' + data.photo_list[0].orgurl + '" alt="thumbnail">'
+							    + '                </div>';
+					}
+					content +=	  '            </div>'
+							    + '            <div class="image-container second">'
+								+ '                <div class="row">';
+					if(data.photo_list.length >= 2){
+					    content += '                    <div class="image">'
+		    					 + '                        <img src="' + data.photo_list[1].orgurl + '" alt="thumbnail">'
+					    		 + '                    </div>';
+					}
+					if(data.photo_list.length >= 3){
+						content += '                    <div class="image">'
+		    					 + '                        <img src="' + data.photo_list[2].orgurl + '" alt="thumbnail">'
+					    		 + '                    </div>';
+					}
+					content +=	  '                </div>'
+								+ '                <div class="row">';
+					if(data.photo_list.length >= 4){
+					    content += '                    <div class="image">'
+		    					 + '                        <img src="' + data.photo_list[3].orgurl + '" alt="thumbnail">'
+					    		 + '                    </div>';
+					}
+					if(data.photo_list.length >= 5){
+						content += '                    <div class="image">'
+		    					 + '                        <img src="' + data.photo_list[4].orgurl + '" alt="thumbnail">'
+					    		 + '                    </div>';
+					}
+					content +=	  '                </div>';
+					content +=	  '        </div>';
+					content +=	  '    </div>';
+				}
+	
+			// 주소
+				var addressFull = '';
+				if(data.address.addressNo != undefined && data.address.addressNo != "")
+					addressFull = data.address.addressFull + '(' + data.address.addressNo + ')';
+				else
+					addressFull = data.address.addressFull;
+				if( addressFull != '' ){
+					 content +=	 '        <div class="addr-container">'
+					    	+ '            <div class="icon">'
+					    	+ '                <i class="fa-solid fa-location-dot"></i>'
+					    	+ '            </div>'
+				    		+ '            <div class="cont">' + addressFull + '</div>'
+							+ '        </div>';
+				}
+	
+	
+			//영업시간
+				if(data.open_time != undefined && data.open_time.dayOfWeek != ""){
+				var openTimeStatus = getOpentimeStatus(data.open_time.dayOfWeek + '◆' + data.open_time.startTime + '◆' + data.open_time.endTime);
+				var classStatus =  openTimeStatus == "영업전" ? "yet" : openTimeStatus == "영업 중" ? "operating" : "deadline";
+			   content += '        <div class="opentime-container">'
+					    + '            <div class="icon">'
+					    + '                <i class="fa-solid fa-clock"></i>'
+					    + '            </div>'
+					    + '            <div class="cont">'
+		    			+ '                <div class="status ' + classStatus + '">' + openTimeStatus + '</div>'
+					    + '                <div class="opentime">' + data.open_time.dayOfWeek + ' ' + data.open_time.startTime + ' ~ ' + data.open_time.endTime + '</div>'
+					    + '            </div>'
+					    + '        </div>';
+				}
+				
+				if(data.phoneNum != undefined && data.phoneNum != ""){
+			   content += '        <div class="tel-container">'
+					    + '            <div class="icon">'
+					    + '                <i class="fa-solid fa-phone"></i>'
+					    + '            </div>'
+					    + '            <div class="cont">' + data.phoneNum + '</div>'
+					    + '        </div>';
+				}
+				
+				
+			   content += '        <div class="comment-title">'
+					    + '            <i class="fa-solid fa-face-smile"></i>'
+					    + '            <div class="rate-container">'
+					    + '                <span id="rate-value">0.0</span>'
+					    + '                <div id="rate" data-value="' + data.comment.rating + '" data-total-stars="5" data-color="#ffb553" data-empty-color="lightgray" data-size=".9rem"> </div>'
+					    + '                <span id="rate-cnt">' + data.comment.count + '건</span>'
+					    + '            </div>'
+					    + '        </div>'
+					    + '        <div class="comment-container">';
+	
+	
+			if(data.phoneNum != undefined && data.phoneNum != ""){
+				for(var i=0; i<data.comment.count; i++){					
+				   content += '        <div class="list">'
+						    + '                <div class="image">'
+						    + '                    <img src="' + data.comment.comments[i].imagePath + '" alt="thumbnail">'
+						    + '                </div>'
+						    + '                <div class="cont-container">'
+						    + '                    <div class="top">'
+						    + '                        <div class="nickname">'
+						    + '                            <span class="rating">★' + data.comment.comments[i].rating + '</span>'
+						    + '                            <b>' + data.comment.comments[i].users.name + '</b>'
+						    + '                        </div>'
+						    + '                        <div class="dt">' + timeAgo(data.comment.commenets[i].createTm)  + '</div>'
+						    + '                    </div>'
+						    + '                    <div class="cont">'
+						    + '                        '+ data.comment.comments[i].comment
+						    + '                        <div class="fade-out">'
+						    + '                            <button class="more-btn">더보기...</button>'
+						    + '                        </div>'
+						    + '                    </div>'
+						    + '                </div>'
+						    + '            </div>'
+						    + '        </div>';
+				}
+			}
+	
+			   content += '    </div>'
+					    + '</div>';
 			overlay.setContent(content);
-			// 새로운 오버레이를 엽니다.
 			overlay.setMap(map);
-			// 현재 열려 있는 오버레이를 업데이트합니다.
 			currentOverlay = overlay;
 
+			//닫기 버튼
+			document.querySelector(".custom-overlay .close-btn").addEventListener("click", function(){
+				overlay.setMap(null);
+				currentOverlay = null;
+			});
+
 			//별점 표시
-			$('#rate').jstars().setValue(data.rating.value);
-			$('#rate-value').text(data.rating.value);
+			$('#rate').jstars().setValue(data.comment.rating);
+			$('#rate-value').text(data.comment.rating);
 		},
 		error: function(error) {
+			console.log(1);
 			console.error('Error fetching image URL:', error);
 		}
 	});
+}
+
+// 더보기 버튼 활성함
+function isTextTruncated(element) {
+    const { scrollHeight, clientHeight } = element;
+    return scrollHeight > clientHeight;
+}
+
+function moreBtnShow(element){
+	element.querySelector(".fade-out").classList.toggle("show");	
+}
+
+function addClickEventMoreBtnShow(element){
+	var moreBtn = element.querySelector(".more-btn");
+	moreBtn.addEventListener("click", function(){		
+		if(element.classList.contains("more")){
+			element.classList.remove("more");
+			moreBtn.innerHTML = "더보기...";
+		}else{
+			element.classList.add("more");
+			moreBtn.innerHTML = "간략히...";
+		}
+	});
+}
+
+// 영업 상태 리턴 함수
+// getOpentimeStatus("월◆09:00◆18:00")
+// getOpentimeStatus("월~금◆09:00◆18:00")
+// getOpentimeStatus("월,목,일◆09:00◆18:00")
+function getDayOfWeekString(day) {
+  switch (day) {
+    case 0: return "일";
+    case 1: return "월";
+    case 2: return "화";
+    case 3: return "수";
+    case 4: return "목";
+    case 5: return "금";
+    case 6: return "토";
+    default: return "";
+  }
+}
+
+function parseTime(timeString) {
+  var timeComponents = timeString.split(':');
+  return {
+    hour: parseInt(timeComponents[0], 10),
+    minute: parseInt(timeComponents[1], 10)
+  };
+}
+
+function getOpentimeStatus(timeRangeString) {
+  var now = new Date();
+  var currentDay = getDayOfWeekString(now.getDay());
+  var currentTime = now.getHours() * 60 + now.getMinutes();
+
+  var timeRanges = timeRangeString.split('◆');
+  var days = timeRanges[0].split(/,|~/);
+  var openTime = parseTime(timeRanges[1]);
+  var closeTime = parseTime(timeRanges[2]);
+
+  var isOpen = days=="매일"?true:false;
+  for (var i = 0; i < days.length; i++) {
+    if (days[i].includes(currentDay)) {
+      isOpen = true;
+      break;
+    }
+  }
+
+  if (!isOpen) {
+    return "금일영업마감";
+  }
+
+  var openTimeInMinutes = openTime.hour * 60 + openTime.minute;
+  var closeTimeInMinutes = closeTime.hour * 60 + closeTime.minute;
+
+  if (currentTime < openTimeInMinutes) {
+    return "영업 전";
+  } else if (currentTime >= openTimeInMinutes && currentTime < closeTimeInMinutes) {
+    return "영업 중";
+  } else {
+    return "금일영업마감";
+  }
 }

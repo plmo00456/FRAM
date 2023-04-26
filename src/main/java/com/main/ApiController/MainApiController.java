@@ -30,7 +30,7 @@ public class MainApiController {
 	private CommentService cs;
 	
 	@PostMapping("/get-place-info")
-	public ResponseEntity<String> GetPlaceInfo(@RequestParam(value="place_id", required = false) String placeId) {
+	public ResponseEntity<String> GetPlaceInfo(@RequestParam(value="place_id", required = false) Integer placeId) {
 		Gson gson = new Gson();
 		JsonObject result = new JsonObject();
 		result.addProperty("status", "N");
@@ -58,7 +58,7 @@ public class MainApiController {
             
 
             // 카카오 평가 점수
-            JsonObject rating = new JsonObject();
+            JsonObject kRating = new JsonObject();
             try {
 	            if (data.has("comment")) {
 		            // 평가 수
@@ -68,12 +68,12 @@ public class MainApiController {
 		            // 평점
 		            float value = scorecnt == 0 ? 0 : Float.parseFloat(String.format("%.1f", (double)scoresum / (double)scorecnt));
 	
-		            rating.addProperty("cnt", scorecnt);
-		            rating.addProperty("sum", scoresum);
-		            rating.addProperty("value", value);
+		            kRating.addProperty("cnt", scorecnt);
+		            kRating.addProperty("sum", scoresum);
+		            kRating.addProperty("value", value);
 	            }
             }catch(Exception e) {}
-            result.add("rating", rating);
+            result.add("kakao-rating", kRating);
             
             // 영업시간
             JsonObject openTime = new JsonObject();
@@ -103,11 +103,15 @@ public class MainApiController {
             // 주소
             JsonObject address = new JsonObject();
             try {
-	            if (data.getAsJsonObject("basicInfo").has("address")) {
-	            	JsonObject addressInfo = data.getAsJsonObject("basicInfo").getAsJsonObject("address").getAsJsonObject("newaddr");
-	            	
-	            	// 도로명 주소 
-	            	String addressFull = addressInfo.get("newaddrfull").getAsString();
+            	String addressFull = "";
+            	if (data.getAsJsonObject("basicInfo").has("address")) {
+            		JsonObject addressRegion = data.getAsJsonObject("basicInfo").getAsJsonObject("address").getAsJsonObject("region");
+            		JsonObject addressInfo = data.getAsJsonObject("basicInfo").getAsJsonObject("address").getAsJsonObject("newaddr");
+            		
+            		// 도로명 주소 1
+            		addressFull += addressRegion.get("newaddrfullname").getAsString() + " ";	            
+	            	// 도로명 주소 2
+	            	addressFull += addressInfo.get("newaddrfull").getAsString();
 	            	// 우편번호
 	            	String addressNo = addressInfo.get("bsizonno").getAsString();
 	            	
@@ -127,7 +131,46 @@ public class MainApiController {
 	            }
             }catch(Exception e) {}
             
+            // 식당 명
+            try {
+	            if (data.getAsJsonObject("basicInfo").has("placenamefull")) {
+	            	String name = data.getAsJsonObject("basicInfo").get("placenamefull").getAsString();
+	            	result.addProperty("name", name);
+	            }else {
+	            	result.addProperty("name", "");
+	            }
+            }catch(Exception e) {}
+            
+            // 식당 카테고리
+            try {
+	            if (data.getAsJsonObject("basicInfo").has("category")) {
+	            	String cateName = data.getAsJsonObject("basicInfo").getAsJsonObject("category").get("catename").getAsString();
+	            	result.addProperty("category", cateName);
+	            }else {
+	            	result.addProperty("category", "");
+	            }
+            }catch(Exception e) {}
+            
+            // 로컬 평점
+            JsonObject comment = new JsonObject();
+            try {
+            	List<Comment> comments = cs.findCommentsByPlaceIdWithUser(placeId);
+            	double ratingValue = 0;
+            	for(int i=0; i<comments.size(); i++)
+            		ratingValue += comments.get(i).getRating();
+            	ratingValue = comments.size() > 0 ? ratingValue / comments.size() : 0; 
+            	
+            	JsonArray jArrayComments = gson.toJsonTree(comments).getAsJsonArray();
+            	comment.addProperty("count", comments.size());
+            	comment.addProperty("rating", ratingValue);
+            	comment.add("comments", jArrayComments);
+            	
+            	result.add("comment", comment);
+            }catch(Exception e) {}
+            
+            
             result.addProperty("status", "Y");
+            
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -142,7 +185,7 @@ public class MainApiController {
 		result.addProperty("status", "N");
 		
 		try {
-			List<Comment> comments = cs.getComments(placeId);
+			List<Comment> comments = cs.findCommentsByPlaceIdWithUser(placeId);
 			double rating = 0;
 			for(int i=0; i<comments.size(); i++)
 				rating += comments.get(i).getRating();

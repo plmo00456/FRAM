@@ -54,7 +54,7 @@ public class MainApiController {
 	            if (data.has("photo")) {
 		            photoList = data.getAsJsonObject("photo")
 		            .getAsJsonArray("photoList")
-		            .get(0)
+		            .get(1)
 		            .getAsJsonObject()
 		            .getAsJsonArray("list");
 	            }

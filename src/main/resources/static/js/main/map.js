@@ -13,8 +13,8 @@ var ps; // map.ps 라이브러리
 var userMarker; // 사용자 현재 위치
 var locYn = false // 사용자 위치 권한 허용 여부    true:허용  false:거부,실패
 var clusterer; // 클러스터
-var currentOverlay = null; // 현재 열려 있는 오버레이
-var currentHoverOverlay = null; // 현재 열려 있는 마우스오버 오버레이
+var currentOverlay = new Map(); // 현재 열려 있는 오버레이
+var currentHoverOverlay = new Map(); // 현재 열려 있는 마우스오버 오버레이
 var markers = [];   // 마커
 
 var infowindow = new kakao.maps.InfoWindow({
@@ -53,7 +53,7 @@ function mapInit() {
 	mapContainer = document.querySelector("#map");
 	map = new kakao.maps.Map(mapContainer, mapOption);
 	ps = new kakao.maps.services.Places();
-	ps.keywordSearch('맛집', placesSearchCB, {
+	ps.keywordSearch('식당', placesSearchCB, {
 		x: longitude,
 		y: latitude
 	});
@@ -102,79 +102,69 @@ function createMarker(place) {
 
 	kakao.maps.event.addListener(marker, 'click', function() {
 		getOverlay(place, marker);
-	});
-	
-	
+	});	
 
     kakao.maps.event.addListener(marker, 'mouseover', function() {
-        hoverOveray(1, place, marker);
+		removeAllHoverOverlays();
+        hoverOveray(place, marker);
     });
 
     kakao.maps.event.addListener(marker, 'mouseout', function() {
-        hoverOveray(0, place, marker);
+        removeAllHoverOverlays();
     });
 	return marker;
 }
 
-function hoverOveray(mode, place, marker){
-    
-	if(mode == 1){
-		
-		$.ajax({
-			url: '/api/get-place-rating',
-			type: 'POST',
-			data: {
-				place_id: place.id
-			},
-			success: function(data) {
-				var content = '<div class="hover-overlay">'
-							+ '<span class="title">' + place.place_name + '</span>';
-				if(data.count > 0){
-					content += '<div id="hover-rate" data-value="' + data.rating + '" data-total-stars="5" data-color="#f65e00" data-empty-color="lightgray" data-size="15px"> </div>'
-				}
-				content += '</div>';
-				    
-			    var hoverOveray = new kakao.maps.CustomOverlay({
-			        position: marker.getPosition(),
-			        content: content,
-			        map: null,
-			        yAnchor: 1.5
-			    });
-				hoverOveray.setMap(map);
-				currentHoverOveray = hoverOveray;
-				$('#hover-rate').jstars();
-			},
-			error: function(error) {
-				console.error('Error fetching place rating:', error);
+function hoverOveray(place, marker){
+	$.ajax({
+		url: '/api/get-place-rating',
+		type: 'POST',
+		data: {
+			place_id: place.id
+		},
+		success: function(data) {
+			var content = '<div class="hover-overlay">'
+						+ '<span class="title">' + place.place_name + '</span>';
+			if(data.count > 0){
+				content += '<div id="hover-rate" data-value="' + data.rating + '" data-total-stars="5" data-color="#f65e00" data-empty-color="lightgray" data-size="15px"> </div>'
 			}
-		});
-		
-	}else{
-		currentHoverOveray.setMap(null);
-		currentHoverOveray = null;
-	}
+			content += '</div>';
+			    
+		    var hoverOveray = new kakao.maps.CustomOverlay({
+		        position: marker.getPosition(),
+		        content: content,
+		        map: null,
+		        yAnchor: 1.5
+		    });
+
+			currentHoverOverlay.set(0, hoverOveray);
+			hoverOveray.setMap(map);
+			$('#hover-rate').jstars();
+		},
+		error: function(error) {
+			console.error('Error fetching place rating:', error);
+		}
+	});
 }
 
 function getOverlay(place, marker) {
+	var currentPosition = marker.getPosition();
+	var adjustedLatitude = currentPosition.getLat() + 0.0001;
+	var adjustedLongitude = currentPosition.getLng() - 0.0001;
+	var adjustedPosition = new kakao.maps.LatLng(adjustedLatitude, adjustedLongitude);
+
 	var customOverlay = new kakao.maps.CustomOverlay({
-		position: marker.getPosition(),
+		position: adjustedPosition,
 		content: '',
 		xAnchor: 0.5,
 		yAnchor: 0,
 		zIndex: 2,
 		clickable: true
 	});
-
-	// 열려 있는 오버레이가 있으면 닫기
-	if (currentOverlay == customOverlay) {
-		customOverlay.setMap(null);
-		currentOverlay = null;
-	} else {
-		if (currentOverlay) {
-			currentOverlay.setMap(null);
-		}
-		getPlaceInfo(place, customOverlay);
-	}
+	
+	removeAllCustomOverlays();
+	getPlaceInfo(place, customOverlay);
+	
 }
 
 function getPlaceInfo(place, overlay) {
@@ -185,7 +175,6 @@ function getPlaceInfo(place, overlay) {
 			place_id: place.id
 		},
 		success: function(data) {
-			var imageURL = data;
 			var content = ''
 					    + '<div class="custom-overlay">'
 					    + '    <div class="top">'
@@ -202,7 +191,7 @@ function getPlaceInfo(place, overlay) {
 			    				+ '            <div class="image-container first">';
 					if(data.photo_list.length >= 1){
 					content +=	  '                <div class="image">'
-							    + '                    <img src="' + data.photo_list[0].orgurl + '" alt="thumbnail">'
+							    + '                    <img src="' + data.photo_list[0].orgurl + '" alt="thumbnail" onclick="imageLayerShow(this, \'' + data.name + '\', 0, ' + data.photo_list.length + ')">'
 							    + '                </div>';
 					}
 					content +=	  '            </div>'
@@ -210,24 +199,24 @@ function getPlaceInfo(place, overlay) {
 								+ '                <div class="row">';
 					if(data.photo_list.length >= 2){
 					    content += '                    <div class="image">'
-		    					 + '                        <img src="' + data.photo_list[1].orgurl + '" alt="thumbnail">'
+		    					 + '                        <img src="' + data.photo_list[1].orgurl + '" alt="thumbnail" onclick="imageLayerShow(this, \'' + data.name + '\', 1, ' + data.photo_list.length + ')">'
 					    		 + '                    </div>';
 					}
 					if(data.photo_list.length >= 3){
 						content += '                    <div class="image">'
-		    					 + '                        <img src="' + data.photo_list[2].orgurl + '" alt="thumbnail">'
+		    					 + '                        <img src="' + data.photo_list[2].orgurl + '" alt="thumbnail" onclick="imageLayerShow(this, \'' + data.name + '\', 2, ' + data.photo_list.length + ')">'
 					    		 + '                    </div>';
 					}
 					content +=	  '                </div>'
 								+ '                <div class="row">';
 					if(data.photo_list.length >= 4){
 					    content += '                    <div class="image">'
-		    					 + '                        <img src="' + data.photo_list[3].orgurl + '" alt="thumbnail">'
+		    					 + '                        <img src="' + data.photo_list[3].orgurl + '" alt="thumbnail" onclick="imageLayerShow(this, \'' + data.name + '\', 3, ' + data.photo_list.length + ')">'
 					    		 + '                    </div>';
 					}
 					if(data.photo_list.length >= 5){
 						content += '                    <div class="image">'
-		    					 + '                        <img src="' + data.photo_list[4].orgurl + '" alt="thumbnail">'
+		    					 + '                        <img src="' + data.photo_list[4].orgurl + '" alt="thumbnail" onclick="imageLayerShow(this, \'' + data.name + '\', 4, ' + data.photo_list.length + ')">'
 					    		 + '                    </div>';
 					}
 					content +=	  '                </div>';
@@ -315,14 +304,17 @@ function getPlaceInfo(place, overlay) {
 	
 			   content += '    </div>'
 					    + '</div>';
+	
+			currentOverlay.set(0, overlay);	
 			overlay.setContent(content);
 			overlay.setMap(map);
-			currentOverlay = overlay;
+			$(".custom-overlay").hide().fadeIn(300);
 
 			//닫기 버튼
 			document.querySelector(".custom-overlay .close-btn").addEventListener("click", function(){
-				overlay.setMap(null);
-				currentOverlay = null;
+				$(".custom-overlay").fadeOut(300, function(){					
+					removeAllCustomOverlays();
+				});
 			});
 
 			//별점 표시
@@ -330,13 +322,12 @@ function getPlaceInfo(place, overlay) {
 			$('#rate-value').text(data.comment.rating);
 		},
 		error: function(error) {
-			console.log(1);
 			console.error('Error fetching image URL:', error);
 		}
 	});
 }
 
-// 더보기 버튼 활성함
+// 더보기 버튼 활성함수
 function isTextTruncated(element) {
     const { scrollHeight, clientHeight } = element;
     return scrollHeight > clientHeight;
@@ -416,4 +407,70 @@ function getOpentimeStatus(timeRangeString) {
   } else {
     return "금일영업마감";
   }
+}
+
+//모든 커스텀 오버레이 삭제
+function removeAllCustomOverlays() {
+  currentOverlay.forEach(function(co, uniqueKey) {
+    co.setMap(null);
+    currentOverlay.delete(uniqueKey);
+  });
+}
+
+//모든 마우스오버 오버레이 삭제
+function removeAllHoverOverlays(){
+	currentHoverOverlay.forEach(function(ho, uniqueKey) {
+    	ho.setMap(null);
+    	currentHoverOverlay.delete(uniqueKey);
+  	});
+}
+
+// 이미지 확대 레이어
+function imageLayerShow(image, titleStr, current, allCnt){
+	var imgLayer = document.querySelector(".dim .image-layer");
+	var img = document.querySelector(".dim .image-layer .image img");
+	var title = document.querySelector(".dim .image-layer .title");
+	img.setAttribute("src", image.getAttribute("src"));
+	title.innerHTML = titleStr;
+	imgLayer.dataset.allcnt = allCnt;
+	imgLayer.dataset.current = current;
+	prevNextBtn();
+	if(imgLayer.style.display == "none" || imgLayer.style.display == ""){	
+		$(".dim").css("display", "flex").hide().fadeIn("fast", function(){
+			$(".dim .image-layer").css("display", "flex").hide().fadeIn();
+		});
+	}
+}
+
+// 이전, 다음 버튼활성화 함수
+function prevNextBtn(){
+	var imgLayer = document.querySelector(".dim .image-layer");
+	var allCnt = parseInt(imgLayer.dataset.allcnt);
+	// 0부터 시작하기때문에 +1 하였음
+	var current = parseInt(imgLayer.dataset.current) + 1;
+	var leftBtn = document.querySelector(".dim .image-layer .btns .left");
+	var rightBtn = document.querySelector(".dim .image-layer .btns .right");
+	
+	if(allCnt >= 2){
+		if(current == 1){
+			leftBtn.style.display = "none";
+			rightBtn.style.display = "block";
+		}else if(current == allCnt){
+			leftBtn.style.display = "block";
+			rightBtn.style.display = "none";	
+		}else{
+			leftBtn.style.display = "block";
+			rightBtn.style.display = "block";
+		}
+	}else{
+		leftBtn.style.display = "none";
+		rightBtn.style.display = "none";
+	}
+}
+
+
+// 이전, 다음 이미지 넘기기 함수
+function prevNextImage(i){
+	var imgs = document.querySelectorAll(".custom-overlay .image-list .image img");
+	imgs[i].click();
 }

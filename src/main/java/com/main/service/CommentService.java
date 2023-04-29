@@ -19,6 +19,6 @@ public class CommentService {
     }
     
     public List<Comment> findCommentsByPlaceIdWithUser(Integer placeId) {
-        return commentRepository.findByPlaceIdAndUserSeqIsNotNull(placeId);
+        return commentRepository.findByPlaceIdAndUserSeqIsNotNullAndUseYn(placeId, "Y");
     }
 }

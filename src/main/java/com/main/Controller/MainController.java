@@ -14,6 +14,7 @@ public class MainController {
 	@GetMapping("/")
 	public ModelAndView main(ModelAndView mav) {
 		mav.addObject("kakaoAppKey", kakaoAppKey);
+		mav.addObject("currentMenu", "1000000");
 		
 		mav.setViewName("main/index");
 		return mav;

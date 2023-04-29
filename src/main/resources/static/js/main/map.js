@@ -49,32 +49,55 @@ function errorLoc(error) {
 }
 
 function mapInit() {
-	mapInitChk = true;
-	mapContainer = document.querySelector("#map");
-	map = new kakao.maps.Map(mapContainer, mapOption);
-	ps = new kakao.maps.services.Places();
-	ps.keywordSearch('식당', placesSearchCB, {
-		x: longitude,
-		y: latitude
-	});
-	map.setMinLevel(1);
-	map.setMaxLevel(10);
-	map.setCenter(new kakao.maps.LatLng(latitude, longitude));
-	map.setLevel(4);
-	clusterer = new kakao.maps.MarkerClusterer({
-		map: map,
-		averageCenter: true,
-		minLevel: 4,
-		minClusterSize: 2
-	});
-	if (locYn) {
-		var userMarkerPosition = new kakao.maps.LatLng(latitude, longitude);
-		userMarker = new kakao.maps.Marker({
-			position: userMarkerPosition
+	$(".dim").show();
+	$(".dim .loading-layer").show();
+	
+	try{
+		mapInitChk = true;
+		mapContainer = document.querySelector("#map");
+		map = new kakao.maps.Map(mapContainer, mapOption);
+		ps = new kakao.maps.services.Places();
+		ps.keywordSearch('식당', placesSearchCB, {
+			x: longitude,
+			y: latitude
 		});
-		userMarker.setMap(map);
+		map.setMinLevel(1);
+		map.setMaxLevel(10);
+		map.setCenter(new kakao.maps.LatLng(latitude, longitude));
+		map.setLevel(4);
+		clusterer = new kakao.maps.MarkerClusterer({
+			map: map,
+			averageCenter: true,
+			minLevel: 4,
+			minClusterSize: 2,
+			calculator: [5, 10, 20, 50],
+		    styles: [{
+				display: 'flex',
+				justifyContent: 'center',
+    			alignItems: 'center',
+		        width: '40px', height: '40px',
+		        background: '#0069ecd1',
+		        borderRadius: '50%',
+		        boxShadow: '0 0 8px rgba(0, 0, 0, 0.4)',
+		        color: '#ffffff',
+		        textAlign: 'center',
+		        fontWeight: 'bold',
+		    }]
+		});
+		if (locYn) {
+			var userMarkerPosition = new kakao.maps.LatLng(latitude, longitude);
+			userMarker = new kakao.maps.Marker({
+				position: userMarkerPosition
+			});
+			userMarker.setMap(map);
+		}
+		$('#rate').jstars();
+	}catch{
+		
+	}finally{
+		$(".dim").hide();
+		$(".dim .loading-layer").hide();
 	}
-	$('#rate').jstars();
 }
 
 function placesSearchCB(data, status, pagination) {
@@ -85,8 +108,41 @@ function placesSearchCB(data, status, pagination) {
 			//클러스터 추가
 			clusterer.addMarkers(markers);
 		}
+		
+		// 지도를 드래그 하면 위치 재 검색 div 출력
+		kakao.maps.event.addListener(map, 'dragend', function () {
+			var relocate = document.querySelector("#relocate");
+			relocate.style.display = "flex";
+		});
 	}
 }
+
+// 위치 재 검색
+function relocate(){
+	$(".dim").show();
+	$(".dim .loading-layer").show();
+	try{		
+		var relocate = document.querySelector("#relocate");
+		relocate.style.display = "none";
+				
+		markers.forEach(function(marker){
+			marker.setMap(null);
+			clusterer.clear();
+		})
+		removeAllCustomOverlays();
+		ps.keywordSearch('식당', placesSearchCB, {
+			x: map.getCenter().getLng(),
+			y: map.getCenter().getLat()
+		});
+	}catch{
+		
+	}finally{
+		$(".dim").hide();
+		$(".dim .loading-layer").hide();
+	}
+	
+}
+
 
 function createMarker(place) {
 	var imageSize = new kakao.maps.Size(35, 38),
@@ -101,6 +157,8 @@ function createMarker(place) {
 	});
 
 	kakao.maps.event.addListener(marker, 'click', function() {
+		$(".dim").show();
+		$(".dim .loading-layer").show();
 		getOverlay(place, marker);
 	});	
 
@@ -186,7 +244,7 @@ function getPlaceInfo(place, overlay) {
 					    + '    </div>'
 					    + '    <div class="content">';
 	
-				if(data.photo_list != undefined && data.photo_list.length > 0){
+				if(Object.keys(data.photo_list).length > 0 && data.photo_list.length > 0){
 				    content +=	  '        <div class="image-list">'
 			    				+ '            <div class="image-container first">';
 					if(data.photo_list.length >= 1){
@@ -241,7 +299,7 @@ function getPlaceInfo(place, overlay) {
 	
 	
 			//영업시간
-				if(data.open_time != undefined && data.open_time.dayOfWeek != ""){
+				if(Object.keys(data.open_time).length > 0 && data.open_time.dayOfWeek != ""){
 				var openTimeStatus = getOpentimeStatus(data.open_time.dayOfWeek + '◆' + data.open_time.startTime + '◆' + data.open_time.endTime);
 				var classStatus =  openTimeStatus == "영업전" ? "yet" : openTimeStatus == "영업 중" ? "operating" : "deadline";
 			   content += '        <div class="opentime-container">'
@@ -276,39 +334,51 @@ function getPlaceInfo(place, overlay) {
 					    + '        <div class="comment-container">';
 	
 	
-			if(data.phoneNum != undefined && data.phoneNum != ""){
-				for(var i=0; i<data.comment.count; i++){					
-				   content += '        <div class="list">'
-						    + '                <div class="image">'
-						    + '                    <img src="' + data.comment.comments[i].imagePath + '" alt="thumbnail">'
-						    + '                </div>'
-						    + '                <div class="cont-container">'
-						    + '                    <div class="top">'
-						    + '                        <div class="nickname">'
-						    + '                            <span class="rating">★' + data.comment.comments[i].rating + '</span>'
-						    + '                            <b>' + data.comment.comments[i].user.name + '</b>'
-						    + '                        </div>'
-						    + '                        <div class="dt">' + timeAgo(data.comment.comments[i].createTm)  + '</div>'
-						    + '                    </div>'
-						    + '                    <div class="cont">'
-						    + '                        '+ data.comment.comments[i].comment
-						    + '                        <div class="fade-out">'
-						    + '                            <button class="more-btn">더보기...</button>'
-						    + '                        </div>'
-						    + '                    </div>'
-						    + '                </div>'
-						    + '            </div>'
-						    + '        </div>';
-				}
+			if (Object.keys(data.comment).length > 0 && data.comment.comments.length > 0) {
+			    for (var i = 0; i < data.comment.count; i++) {
+			        content += '<div class="list">'
+			            + '<div class="image">';
+			        if (data.comment.comments[i].imagePath != undefined && data.comment.comments[i].imagePath != "") {
+			            content += '<img src="' + data.comment.comments[i].imagePath + '" alt="thumbnail">';
+			        }
+			        content += '</div>'
+			            + '<div class="cont-container">'
+			            + '<div class="top">'
+			            + '<div class="nickname">'
+			            + '<span class="rating">★' + data.comment.comments[i].rating + '</span>'
+			            + '<b>' + data.comment.comments[i].user.name + '</b>'
+			            + '</div>'
+			            + '<div class="dt">' + timeAgo(data.comment.comments[i].createTm) + '</div>'
+			            + '</div>'
+			            + '<div class="cont">'
+			            + data.comment.comments[i].comment
+			            + '<div class="fade-out">'
+			            + '<button class="more-btn">더보기...</button>'
+			            + '</div>'
+			            + '</div>'
+			            + '</div>'
+			            + '</div>';
+			    }
 			}
 	
-			   content += '    </div>'
-					    + '</div>';
+		   	content += '    </div>'
+				    + '</div>';
 	
 			currentOverlay.set(0, overlay);	
 			overlay.setContent(content);
+			
 			overlay.setMap(map);
+			map.setCenter(overlay.getPosition());
 			$(".custom-overlay").hide().fadeIn(300);
+			// 마우스가 오버레이에 진입하면 원래의 스크롤 기능 비활성화
+			document.querySelector(".custom-overlay").addEventListener('mouseenter', function() {
+			  map.setZoomable(false);
+			});
+			
+			// 마우스가 오버레이에서 벗어나면 원래의 스크롤 기능 활성화
+			document.querySelector(".custom-overlay").addEventListener('mouseleave', function() {
+			  map.setZoomable(true);
+			});
 
 			//닫기 버튼
 			document.querySelector(".custom-overlay .close-btn").addEventListener("click", function(){
@@ -320,8 +390,13 @@ function getPlaceInfo(place, overlay) {
 			//별점 표시
 			$('#rate').jstars().setValue(data.comment.rating);
 			$('#rate-value').text(data.comment.rating);
+			
+			$(".dim").hide();
+			$(".dim .loading-layer").hide();
 		},
 		error: function(error) {
+			$(".dim").hide();
+			$(".dim .loading-layer").hide();			
 			console.error('Error fetching image URL:', error);
 		}
 	});
@@ -367,6 +442,71 @@ function getDayOfWeekString(day) {
   }
 }
 
+function getDays(days){
+	var day = ['월', '화', '수', '목', '금', '토', '일'];
+	//월~수
+	if(days.includes("~")){
+		var startDay = days.split("~")[0];
+		var endDay = days.split("~")[1];
+		var str = "";
+		
+		switch (startDay) {
+		    case "월":
+				startDay = 0;
+				break;
+			case "화":
+				startDay = 1;
+				break;
+			case "수":
+				startDay = 2;
+				break;
+			case "목":
+				startDay = 3;
+				break;
+			case "금":
+				startDay = 4;
+				break;
+			case "토":
+				startDay = 5;
+				break;
+			case "일":
+				startDay = 6;
+				break;
+  		}
+  		
+  		switch (endDay) {
+		    case "월":
+				endDay = 0;
+				break;
+			case "화":
+				endDay = 1;
+				break;
+			case "수":
+				endDay = 2;
+				break;
+			case "목":
+				endDay = 3;
+				break;
+			case "금":
+				endDay = 4;
+				break;
+			case "토":
+				endDay = 5;
+				break;
+			case "일":
+				endDay = 6;
+				break;
+  		}
+	  		
+		for(var i=startDay; i<=endDay; i++){
+			str += day[i] + ",";
+		}
+		return str;
+	}else{
+		return days;
+	}
+}
+
 function parseTime(timeString) {
   var timeComponents = timeString.split(':');
   return {
@@ -381,11 +521,12 @@ function getOpentimeStatus(timeRangeString) {
   var currentTime = now.getHours() * 60 + now.getMinutes();
 
   var timeRanges = timeRangeString.split('◆');
-  var days = timeRanges[0].split(/,|~/);
+  var days = getDays(timeRanges[0]).split(/,|~/);
   var openTime = parseTime(timeRanges[1]);
   var closeTime = parseTime(timeRanges[2]);
 
   var isOpen = days=="매일"?true:false;
+  
   for (var i = 0; i < days.length; i++) {
     if (days[i].includes(currentDay)) {
       isOpen = true;

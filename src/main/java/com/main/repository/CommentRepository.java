@@ -11,5 +11,5 @@ import com.main.vo.Comment;
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 	List<Comment> findByPlaceId(Integer placeId);
 	
-	List<Comment> findByPlaceIdAndUserSeqIsNotNull(Integer placeId);
+	List<Comment> findByPlaceIdAndUserSeqIsNotNullAndUseYn(Integer placeId, String useYn);
 }

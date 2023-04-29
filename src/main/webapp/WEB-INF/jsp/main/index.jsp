@@ -1,20 +1,18 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
          pageEncoding="UTF-8"%>
-<%@ taglib uri="http://java.sun.com/jstl/core" prefix="c" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jstl/core_rt" %>
 <!DOCTYPE html>
 <html>
   <head>
     <meta charset="UTF-8">
     <title>Insert title here</title>
-    <script src="https://kit.fontawesome.com/790b1811b6.js" crossorigin="anonymous"></script>
     
-    <link href="/css/common/basic.css" rel="stylesheet" type="text/css" />
+    <c:import url="/common/files" charEncoding="UTF-8"/>
+    
     <link href="/css/main/main.css" rel="stylesheet" type="text/css" />
     <link href="/css/main/map.css" rel="stylesheet" type="text/css" />
-    
-    <script src="/js/util/util.js"></script>
+
     <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoAppKey}&libraries=services,clusterer"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="/plugin/star-rating/jstars.js"></script>
 
     <script src="/js/main/map.js"></script>
@@ -52,6 +50,12 @@
 					prevNextImage(current - 1);
 				else if(e.key == "ArrowRight" && rightBtn.style.display != "none" && rightBtn.style.display != "")
 					prevNextImage(current + 1);
+				else if(e.key == "Escape")
+					document.querySelector(".dim").click();
+			}else{
+				if(e.key == "Escape"){
+					document.querySelector(".custom-overlay .close-btn").click();
+				}
 			}
     	});
     	
@@ -63,17 +67,31 @@
   </head>
   <body>
   	<div class="wrap">
-	  	<div class="container">
-	  		<div class="top">
-	  		</div>
-	  		<div class="main">
-	  			<div id="map" class="map"></div>
-	  		</div>
-	  		<div class="footer">
-	  		</div>
-	  	</div>
+  		<c:import url="/common/top" charEncoding="UTF-8">
+  			<c:param name="currentMenu" value="${currentMenu}"/>
+  		</c:import>
+  		
+  		<div class="main">
+  			<div class="container">
+  				<div id="map" class="map">
+  					<div id="relocate" onclick="relocate();">
+	  					<i class="fa-solid fa-repeat"></i>
+	  					현 위치에서 검색
+	  				</div>
+  				</div>
+  			</div>
+  		</div>
+  		
+  		<c:import url="/common/fotter" charEncoding="UTF-8">
+  			<c:param name="currentMenu" value="${currentMenu}"/>
+  		</c:import>
+
   	</div>
   	<div class="dim">
+  		<div class="layer loading-layer">
+  			<img src="/image/loading.gif">
+  			<span>Loading...</span>
+  		</div>
   		<div class="layer image-layer" data-allcnt="0" data-current="0">
   			<div class="title"></div>
   			<div class="image">
@@ -91,6 +109,34 @@
   	</div>
 	
 	<style>
+		.wrap{
+		    display: flex;
+    		justify-content: center;
+    		flex-direction: column;
+		}
+		
+		.wrap > .top{
+			width: 100%;
+			height: 60px;
+			border-bottom: 1px solid #a8a6a6;
+		    display: flex;
+		    justify-content: center;
+		    align-items: center;
+		}
+		
+		.wrap > .main{
+		    display: flex;
+			width: 100%;
+			justify-content: center;
+		}
+		
+		.wrap > .main .container{
+			display: flex;
+		    flex-direction: column;
+			width: 1000px;
+    		justify-content: center;
+		}
+	
 		.dim{
 			position: absolute;
 			width: 100%;
@@ -118,7 +164,7 @@
 			flex-direction: column;
 			padding: 50px;
 			background: #fff;
-			border-radius: 13px;
+			border-radius: 10px;
 			cursor: auto;
 			position: relative;
 			box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px
@@ -180,6 +226,26 @@
 		.dim .image-layer .btns .right:hover{
 			color: #696969;
 			background: linear-gradient(-90deg, rgba(60, 60, 60, 0.2),  transparent);
+		}
+		
+		.dim .loading-layer{
+			position: absolute;
+		    z-index: 1;
+		    width: 200px;
+		    height: 100px;
+		    background: #fffffff2;
+		    display: flex;
+		    top: 50%;
+		    left: 50%;
+		    border-radius: 5px;
+		    transform: translate(-50%, -50%);
+		    justify-content: center;
+		    align-items: center;
+		}
+		
+		.dim .loading-layer img{
+			width: 60px;
+			height: 60px;
 		}
 		
 		

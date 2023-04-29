@@ -35,6 +35,8 @@ public class Comment {
 	private double rating;
 	@Column(name = "image_path")
 	private String imagePath;
+	@Column(name = "use_yn")
+	private String useYn;
 	@Column(name = "create_tm", updatable = false, insertable = false)
 	private LocalDateTime createTm;
 	@Column(name = "update_tm", updatable = false, insertable = false)

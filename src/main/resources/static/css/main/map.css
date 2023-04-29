@@ -1,7 +1,31 @@
 .map {
 	display: flex;
-	width: 1000px;
+	width: 100%;
 	height: 700px;
+}
+
+.map #relocate{
+	position: absolute;
+    bottom: 50px;
+    left: 50%;
+    z-index: 2;
+    padding: 10px 15px;
+    background: #0069ec;
+    color: #fff;
+    border-radius: 30px;
+    font-weight: 600;
+    cursor: pointer;
+    transform: translate(-50%, -50%);
+    height: 22px;
+    box-shadow: 0 4px 10px 0 rgba(0,0,0,.2);
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    width: 130px;
+}
+
+.map #relocate:hover{
+	background: #015bcb;
 }
 
 .hover-overlay {
@@ -244,8 +268,7 @@
 	padding-bottom: 3px;
 }
 
-.custom-overlay .comment-container .list .cont-container .cont .fade-out .more-btn
-	{
+.custom-overlay .comment-container .list .cont-container .cont .fade-out .more-btn{
 	background: #2f334a;
 	color: #fff;
 	border: none;

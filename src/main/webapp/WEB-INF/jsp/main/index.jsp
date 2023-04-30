@@ -5,7 +5,8 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>Insert title here</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>내주변맛집</title>
     
     <c:import url="/common/files" charEncoding="UTF-8"/>
     
@@ -59,6 +60,15 @@
 			}
     	});
     	
+    	document.querySelector(".user-dim").addEventListener("click", function(e){
+    		if (e.target !== e.currentTarget) return;
+    		$(this).fadeOut();
+    		var layers = document.querySelectorAll(".user-dim .layer");
+    		layers.forEach(function(layer){
+    			layer.style.display = "none";
+    		});
+    	});
+    	
     	
         // 맵 표시
         getUserLocation();
@@ -107,148 +117,5 @@
   			</div>
   		</div>
   	</div>
-	
-	<style>
-		.wrap{
-		    display: flex;
-    		justify-content: center;
-    		flex-direction: column;
-		}
-		
-		.wrap > .top{
-			width: 100%;
-			height: 60px;
-			border-bottom: 1px solid #a8a6a6;
-		    display: flex;
-		    justify-content: center;
-		    align-items: center;
-		}
-		
-		.wrap > .main{
-		    display: flex;
-			width: 100%;
-			justify-content: center;
-		}
-		
-		.wrap > .main .container{
-			display: flex;
-		    flex-direction: column;
-			width: 1000px;
-    		justify-content: center;
-		}
-	
-		.dim{
-			position: absolute;
-			width: 100%;
-			height: 100%;
-			left: 0;
-			top: 0;
-			z-index: 9999;
-			display: none;
-			justify-content: center;
-			align-items: center;
-			background: rgba(0, 0, 0, 0.58);
-			cursor:pointer;
-			-webkit-user-select: none;
-			-moz-user-select: none;
-			-ms-user-select: none;
-			user-select: none;
-		}
-		
-		.dim .image-layer{
-			width: 70%;
-			height: 70%;
-			display: none;
-			justify-content: center;
-			align-content: center;
-			flex-direction: column;
-			padding: 50px;
-			background: #fff;
-			border-radius: 10px;
-			cursor: auto;
-			position: relative;
-			box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px
-		rgba(0, 0, 0, 0.22);
-		}
-		
-		.dim .image-layer .image{
-			width: 100%;
-			height: 93%;
-			display: flex;
-			justify-content: center;
-		}
-		
-		.dim .image-layer .image img{
-			width: auto;
-			max-width: 100%;
-		}
-		
-		.dim .image-layer .title{
-			width: 100%;
-			height: 7%;
-			display: flex;
-			justify-content: center;
-			font-size: 1.5rem;
-			align-content: center;
-			font-weight: 700;
-		}
-		
-		.dim .image-layer .btns button{
-			position: absolute;
-			top: 0;
-			height: 100%;
-			min-width: 140px;
-			background: transparent;
-			border: none;
-			cursor: pointer;
-			color: #8c8787;
-			font-size: 2.5rem;
-			display: none;
-		}
-		
-		.dim .image-layer .btns .left{
-			text-align: left;
-			left: 0;
-			padding-left: 40px;
-		}
-		
-		.dim .image-layer .btns .left:hover{
-			color: #696969;
-			background: linear-gradient(to right, rgba(60, 60, 60, 0.2),  transparent);
-		}
-		
-		.dim .image-layer .btns .right{
-			right: 0;
-			text-align: right;
-			padding-right: 40px;
-		}
-		
-		.dim .image-layer .btns .right:hover{
-			color: #696969;
-			background: linear-gradient(-90deg, rgba(60, 60, 60, 0.2),  transparent);
-		}
-		
-		.dim .loading-layer{
-			position: absolute;
-		    z-index: 1;
-		    width: 200px;
-		    height: 100px;
-		    background: #fffffff2;
-		    display: flex;
-		    top: 50%;
-		    left: 50%;
-		    border-radius: 5px;
-		    transform: translate(-50%, -50%);
-		    justify-content: center;
-		    align-items: center;
-		}
-		
-		.dim .loading-layer img{
-			width: 60px;
-			height: 60px;
-		}
-		
-		
-	</style>
   </body>
 </html>

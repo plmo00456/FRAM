@@ -20,8 +20,8 @@
 			</div>
 			<div class="login">
 				<c:if test="${sessionScope.userid eq null}">
-					<div><i class="fa-solid fa-right-to-bracket"></i></div>
-					<div><i class="fa-solid fa-user-plus"></i></div>
+					<div class="login-btn"><i class="fa-solid fa-right-to-bracket"></i></div>
+					<div class="register-btn"><i class="fa-solid fa-user-plus"></i></div>
 				</c:if>
 				<c:if test="${sessionScope.userid ne null}">
 					<div><i class="fa-solid fa-right-from-bracket"></i>로그아웃</div>
@@ -30,6 +30,19 @@
 		</div>
 	</div>
 </div>
+<c:import url="/auth/login" charEncoding="UTF-8">
+</c:import>
+
+<script>
+    document.querySelector(".login-btn").addEventListener("click", function(){
+		$(".user-dim").css("display", "flex").hide().fadeIn("fast", function(){
+			$(".user-dim .login-layer").css("display", "flex").hide().fadeIn();
+		});
+	});
+	document.querySelector(".register-btn").addEventListener("click", function(){
+
+	});
+</script>
 
 <style>
 	.wrap .top .container{

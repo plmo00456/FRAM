@@ -129,6 +129,7 @@ function relocate(){
 			marker.setMap(null);
 			clusterer.clear();
 		})
+		markers = [];
 		removeAllCustomOverlays();
 		ps.keywordSearch('식당', placesSearchCB, {
 			x: map.getCenter().getLng(),

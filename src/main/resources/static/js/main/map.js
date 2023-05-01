@@ -283,19 +283,21 @@ function getPlaceInfo(place, overlay) {
 					content +=	  '    </div>';
 				}
 	
-			// 주소
-				var addressFull = '';
-				if(data.address.addressNo != undefined && data.address.addressNo != "")
-					addressFull = data.address.addressFull + '(' + data.address.addressNo + ')';
-				else
-					addressFull = data.address.addressFull;
-				if( addressFull != '' ){
-					 content +=	 '        <div class="addr-container">'
-					    	+ '            <div class="icon">'
-					    	+ '                <i class="fa-solid fa-location-dot"></i>'
-					    	+ '            </div>'
-				    		+ '            <div class="cont">' + addressFull + '</div>'
-							+ '        </div>';
+				// 주소
+				if(Object.keys(data.address).length > 0){
+					var addressFull = '';
+					if(data.address.addressNo != undefined && data.address.addressNo != "")
+						addressFull = data.address.addressFull + '(' + data.address.addressNo + ')';
+					else
+						addressFull = data.address.addressFull;
+					if( addressFull != '' ){
+						 content +=	 '        <div class="addr-container">'
+						    	+ '            <div class="icon">'
+						    	+ '                <i class="fa-solid fa-location-dot"></i>'
+						    	+ '            </div>'
+					    		+ '            <div class="cont">' + addressFull + '</div>'
+								+ '        </div>';
+					}
 				}
 	
 	

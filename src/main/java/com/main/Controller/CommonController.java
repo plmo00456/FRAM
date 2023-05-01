@@ -24,9 +24,6 @@ public class CommonController {
 
 	@GetMapping("/common/top")
 	public ModelAndView Top(ModelAndView mav, HttpServletRequest req) {
-		System.out.println(req.getServletPath());
-		
-		
 		mav.addObject("menu", ms.getMenus());
 		mav.setViewName("common/top");
 		return mav;

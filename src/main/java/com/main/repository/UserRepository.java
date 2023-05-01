@@ -8,4 +8,5 @@ import com.main.vo.Users;
 @Repository
 public interface UserRepository extends JpaRepository<Users, Long> {
 	
+	Users findById(String id);
 }

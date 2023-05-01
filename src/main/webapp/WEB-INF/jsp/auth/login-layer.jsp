@@ -8,9 +8,9 @@
             <img src="/image/logo.png" alt="로고">
         </div>
         <div class="input-box">
-            <input type="text" name="id" maxlength="20" placeholder="아이디">
+            <input type="text" name="userId" maxlength="20" placeholder="아이디">
             <input type="password" name="password" maxlength="50" placeholder="비밀번호">
-            <input type="button" class="login-btn" value="로그인">
+            <input type="button" id="login-btn" class="login-btn" value="로그인">
         </div>
         <div class="find-pass">
             <a href="#">비밀번호 재설정</a>
@@ -75,7 +75,10 @@
     .user-dim .login-layer > div{
         display: flex;
         justify-content: center;
-        margin-bottom: 20px;
+    }
+    
+    .user-dim .login-layer .logo{
+    	margin-bottom: 30px;
     }
 
     .user-dim .login-layer .logo img{
@@ -169,21 +172,6 @@
         border: none;
         cursor: pointer;
         margin-right: 6px;
-    }
-
-    .user-dim .login-layer .sns-login .sns-btns button.google{
-        border: 1px solid #dedede;
-        border-radius: 100px;
-        width: 50px;
-        height: 50px;
-        margin-left: 5px;
-        line-height: 65px;
-        margin-right: 0;
-    }
-
-    .user-dim .login-layer .sns-login .sns-btns button.google img{
-        width: 90%;
-        height: 70%;
     }
 
 

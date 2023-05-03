@@ -43,6 +43,7 @@
     	
     	document.addEventListener("keydown", function (e){
     		var imgLayer = document.querySelector(".dim .image-layer");
+    		var loginLayer = document.querySelector(".user-dim .login-layer");
     		var current = parseInt(imgLayer.dataset.current);
 	    	if(imgLayer.style.display != "none" && imgLayer.style.display != ""){
 	    		var leftBtn = document.querySelector(".dim .image-layer .btns .left");
@@ -53,6 +54,9 @@
 					prevNextImage(current + 1);
 				else if(e.key == "Escape")
 					document.querySelector(".dim").click();
+			}if(loginLayer.style.display != "none" && loginLayer.style.display != ""){
+				if(e.key == "Enter")
+					document.querySelector("#login-btn").click();
 			}else{
 				if(e.key == "Escape"){
 					document.querySelector(".custom-overlay .close-btn").click();

@@ -4,7 +4,6 @@ import java.security.Key;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.Cookie;
@@ -20,8 +19,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
-
-import com.main.utils.Utils;
+import org.springframework.util.StringUtils;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -40,7 +38,7 @@ public class JwtTokenProvider {
 	private Integer accessTokenExpire;
 	@Value("${jwt.refresh.token.expire}")
 	private Integer refreshTokenExpire;
-	private final UserDetailsService userDetailsService;
+	private final CustomUserDetailsService userDetailsService;
     private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
  
     // 유저 정보를 가지고 AccessToken, RefreshToken 을 생성하는 메서드
@@ -78,6 +76,7 @@ public class JwtTokenProvider {
                 .grantType("Bearer")
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
+                .accessExpire(accessTokenExpire)
                 .build();
     }
  
@@ -97,7 +96,8 @@ public class JwtTokenProvider {
                         .collect(Collectors.toList());
  
         // UserDetails 객체를 만들어서 Authentication 리턴
-        UserDetails principal = new User(claims.getSubject(), "", authorities);
+        UserDetails principal = userDetailsService.loadUserByUsername(claims.getSubject());
+        
         return new UsernamePasswordAuthenticationToken(principal, "", authorities);
     }
  
@@ -107,9 +107,9 @@ public class JwtTokenProvider {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-            System.out.println("Invalid JWT Token" + e);
+            //System.out.println("Invalid JWT Token" + e);
         } catch (ExpiredJwtException e) {
-            System.out.println("Expired JWT Token" + e);
+            //System.out.println("Expired JWT Token" + e);
         } catch (UnsupportedJwtException e) {
             System.out.println("Unsupported JWT Token" + e);
         } catch (IllegalArgumentException e) {
@@ -145,5 +145,13 @@ public class JwtTokenProvider {
                 .setExpiration(validity)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
+    }
+    
+    public String resolveToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer")) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 }

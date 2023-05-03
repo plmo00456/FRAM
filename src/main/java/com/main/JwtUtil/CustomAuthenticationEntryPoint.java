@@ -23,8 +23,8 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         response.setContentType("application/json;charset=UTF-8");
 
         Map<String, Object> responseData = new HashMap<>();
-        responseData.put("status", HttpServletResponse.SC_UNAUTHORIZED);
-        responseData.put("message", "인증 실패");
+        responseData.put("code", HttpServletResponse.SC_UNAUTHORIZED);
+        responseData.put("msg", "인증 실패");
 
         ObjectMapper objectMapper = new ObjectMapper();
         response.getWriter().write(objectMapper.writeValueAsString(responseData));

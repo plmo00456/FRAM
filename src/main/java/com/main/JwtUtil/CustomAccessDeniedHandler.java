@@ -24,8 +24,8 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         response.setContentType("application/json;charset=UTF-8");
 
         Map<String, Object> responseData = new HashMap<>();
-        responseData.put("status", HttpServletResponse.SC_FORBIDDEN);
-        responseData.put("message", "접근 권한이 없습니다");
+        responseData.put("code", HttpServletResponse.SC_FORBIDDEN);
+        responseData.put("msg", "접근 권한이 없습니다");
 
         ObjectMapper objectMapper = new ObjectMapper();
         response.getWriter().write(objectMapper.writeValueAsString(responseData));

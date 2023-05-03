@@ -543,7 +543,9 @@ function getOpentimeStatus(timeRangeString) {
 
   var openTimeInMinutes = openTime.hour * 60 + openTime.minute;
   var closeTimeInMinutes = closeTime.hour * 60 + closeTime.minute;
-
+  if(closeTimeInMinutes < openTimeInMinutes){
+	  closeTimeInMinutes += 24 * 60;
+  }
   if (currentTime < openTimeInMinutes) {
     return "영업 전";
   } else if (currentTime >= openTimeInMinutes && currentTime < closeTimeInMinutes) {

@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -22,9 +23,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
  
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String token = resolveToken(request);
-        if (token != null && jwtTokenProvider.validateToken(token)) {
-            // 토큰이 유효할 경우 토큰에서 Authentication 객체를 가지고 와서 SecurityContext 에 저장
+    	String token = resolveToken(request);
+    	if(token == null) {    		
+    		Cookie[] cookies = request.getCookies();
+    		if (cookies != null) {
+    			for (Cookie cookie : cookies) {
+    				if (cookie.getName().equals("accessToken")) {
+    					token = cookie.getValue();
+    					break;
+    				}
+    			}
+    		}
+    	}
+    	
+    	boolean validateToken = jwtTokenProvider.validateToken(token);
+    	token = validateToken ? token : null;
+        if (token != null && validateToken) {
             Authentication authentication = jwtTokenProvider.getAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }

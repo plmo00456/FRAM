@@ -1,13 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
          pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jstl/core_rt" %>
-<%@ page import="org.springframework.security.core.Authentication" %>
-<%@ page import="org.springframework.security.core.context.SecurityContextHolder" %>
-
-<%
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    boolean isLoggedIn = authentication != null && !authentication.getName().equals("anonymousUser");
-%>
 
 <c:set var="path" value="${requestScope['javax.servlet.forward.servlet_path']}" />
 <div class="top">
@@ -27,12 +20,13 @@
 				</c:forEach>
 			</div>
 			<div class="login">
-				<% if (isLoggedIn) { %>
-				    <div><i class="fa-solid fa-right-from-bracket"></i></div>
-				<% } else { %>
-				    <div class="login-layer-btn"><i class="fa-solid fa-right-to-bracket"></i></div>
+				<c:if test="${userInfo ne null }">
+					<div class="logout-btn" id="logout-btn"><i class="fa-solid fa-right-from-bracket"></i></div>
+				</c:if>
+				<c:if test="${userInfo eq null }">
+					<div class="login-layer-btn"><i class="fa-solid fa-right-to-bracket"></i></div>
 					<div class="register-layer-btn"><i class="fa-solid fa-user-plus"></i></div>
-				<% } %>
+				</c:if>
 			</div>
 		</div>
 	</div>
@@ -41,32 +35,41 @@
 </c:import>
 
 <script>
-    document.querySelector(".login-layer-btn").addEventListener("click", function(){
-		$(".user-dim").css("display", "flex").hide().fadeIn("fast", function(){
-			$(".user-dim .login-layer").css("display", "flex").hide().fadeIn();
+	<c:if test="${userInfo eq null}">		
+	    document.querySelector(".login-layer-btn").addEventListener("click", function(){
+			$(".user-dim").css("display", "flex").hide().fadeIn("fast", function(){
+				$(".user-dim .login-layer").css("display", "flex").hide().fadeIn();
+			});
 		});
-	});
-	document.querySelector(".register-layer-btn").addEventListener("click", function(){
+		document.querySelector(".register-layer-btn").addEventListener("click", function(){
 
-	});
-	console.log(document.querySelector("#login-btn"));
-	document.querySelector("#login-btn").addEventListener("click", function(){
-		$.ajax({
-			url : "/api/auth/login",
-			type: 'POST',
-			contentType: "application/json",
-		    data: JSON.stringify({
-		        "userId": document.querySelector("input[name=userId]").value,
-		        "password": document.querySelector("input[name=password]").value
-		    }),
-			success: function(data) {
-				console.log(data);
-			},
-			error: function(error) {
-				console.error('Error fetching place rating:', error);
-			}
 		});
-	});
+		document.querySelector("#login-btn").addEventListener("click", function(){
+			$.ajax({
+				url : "/api/auth/login",
+				type: 'POST',
+				contentType: "application/json",
+			    data: JSON.stringify({
+			        "userId": document.querySelector("input[name=userId]").value,
+			        "password": document.querySelector("input[name=password]").value
+			    }),
+				success: function(data) {
+					document.cookie = 'accessToken=' + data.accessToken + ';path=/;max-age=' + data.accessExpire;
+					location.reload();
+				},
+				error: function(error) {
+					console.error('Error fetching place rating:', error);
+				}
+			});
+		});
+	</c:if>
+	<c:if test="${userInfo ne null}">
+		document.querySelector("#logout-btn").addEventListener("click", function(){
+			document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+			document.cookie = 'accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+			location.reload();
+		});
+	</c:if>
 </script>
 
 <style>

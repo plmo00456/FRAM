@@ -9,13 +9,16 @@ import lombok.Data;
 @AllArgsConstructor
 public class JwtToken {
 	
-	public void JwtToken(String grantType, String accessToken, String refreshToken) {
+	public void JwtToken(String grantType, String accessToken, String refreshToken, Integer accessExpire) {
 		this.grantType = grantType;
 		this.accessToken = accessToken;
 		this.refreshToken = refreshToken;
+		this.accessExpire = accessExpire;
+		
 	}
  
     private String grantType;
     private String accessToken;
     private String refreshToken;
+    private Integer accessExpire;
 }

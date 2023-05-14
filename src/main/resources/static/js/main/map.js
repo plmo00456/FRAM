@@ -16,6 +16,8 @@ var clusterer; // 클러스터
 var currentOverlay = new Map(); // 현재 열려 있는 오버레이
 var currentHoverOverlay = new Map(); // 현재 열려 있는 마우스오버 오버레이
 var markers = [];   // 마커
+//var keywords = ['식당', '카페', '맛집', '음식', '요리'];
+var keywords = ['식당', '카페', '맛집', '음식', '요리', '레스토랑', '뷔페', '바', '퍼브', '이탈리아 음식', '한식', '중식', '일식', '양식', '빵집', '파스타', '피자', '스시', '라멘', '순두부', '김밥', '떡볶이', '치킨', '햄버거', '도넛', '아이스크림', '디저트 카페'];
 
 var infowindow = new kakao.maps.InfoWindow({
 	zIndex: 1
@@ -57,11 +59,14 @@ function mapInit() {
 		mapContainer = document.querySelector("#map");
 		map = new kakao.maps.Map(mapContainer, mapOption);
 		ps = new kakao.maps.services.Places();
-		ps.keywordSearch('식당', placesSearchCB, {
-			x: longitude,
-			y: latitude
-		});
-		map.setMinLevel(1);
+		
+		for (var i = 0; i < keywords.length; i++) {
+		    ps.keywordSearch(keywords[i], placesSearchCB, {
+		        x: longitude,
+		        y: latitude
+		    });
+		}
+		map.setMinLevel(2);
 		map.setMaxLevel(10);
 		map.setCenter(new kakao.maps.LatLng(latitude, longitude));
 		map.setLevel(4);
@@ -102,17 +107,33 @@ function mapInit() {
 
 function placesSearchCB(data, status, pagination) {
 	if (status === kakao.maps.services.Status.OK) {
+		var bounds = map.getBounds();
 		for (var i = 0; i < data.length; i++) {
-			//마커 추가
-			markers.push(createMarker(data[i]));
-			//클러스터 추가
-			clusterer.addMarkers(markers);
-		}
+            var isDuplicate = false;
+            var latlng = new kakao.maps.LatLng(data[i].y, data[i].x);
+            for (var j = 0; j < markers.length; j++) {
+                if (markers[j].getPosition().equals(new kakao.maps.LatLng(data[i].y, data[i].x))) {
+                    isDuplicate = true;
+                    break;
+                }
+            }
+            if (!isDuplicate && bounds.contain(latlng)) {
+                var marker = createMarker(data[i]);
+                markers.push(marker);
+                clusterer.addMarker(marker);
+            }
+        }
 		
 		// 지도를 드래그 하면 위치 재 검색 div 출력
 		kakao.maps.event.addListener(map, 'dragend', function () {
 			var relocate = document.querySelector("#relocate");
 			relocate.style.display = "flex";
+			removeAllHoverOverlays();
+		});
+		
+		// 지도 줌이벤트 시 마우스 오버 효과 삭제
+		kakao.maps.event.addListener(map, 'zoom_changed', function() {
+		    removeAllHoverOverlays();
 		});
 	}
 }
@@ -131,10 +152,12 @@ function relocate(){
 		})
 		markers = [];
 		removeAllCustomOverlays();
-		ps.keywordSearch('식당', placesSearchCB, {
-			x: map.getCenter().getLng(),
-			y: map.getCenter().getLat()
-		});
+		for (var i = 0; i < keywords.length; i++) {
+			ps.keywordSearch(keywords[i], placesSearchCB, {
+				x: map.getCenter().getLng(),
+				y: map.getCenter().getLat()
+			});
+		}
 	}catch{
 		
 	}finally{
@@ -208,12 +231,9 @@ function hoverOveray(place, marker){
 
 function getOverlay(place, marker) {
 	var currentPosition = marker.getPosition();
-	var adjustedLatitude = currentPosition.getLat() + 0.0001;
-	var adjustedLongitude = currentPosition.getLng() - 0.0001;
-	var adjustedPosition = new kakao.maps.LatLng(adjustedLatitude, adjustedLongitude);
 
 	var customOverlay = new kakao.maps.CustomOverlay({
-		position: adjustedPosition,
+		position:currentPosition,
 		content: '',
 		xAnchor: 0.5,
 		yAnchor: 0,
@@ -247,44 +267,52 @@ function getPlaceInfo(place, overlay) {
 	
 				if(Object.keys(data.photo_list).length > 0 && data.photo_list.length > 0){
 				    content +=	  '        <div class="image-list">'
-			    				+ '            <div class="image-container first">';
-					if(data.photo_list.length >= 1){
-					content +=	  '                <div class="image">'
-							    + '                    <img src="' + data.photo_list[0].orgurl + '" alt="thumbnail" onclick="imageLayerShow(this, \'' + data.name + '\', 0, ' + data.photo_list.length + ')">'
-							    + '                </div>';
-					}
-					content +=	  '            </div>'
-							    + '            <div class="image-container second">'
-								+ '                <div class="row">';
-					if(data.photo_list.length >= 2){
-					    content += '                    <div class="image">'
-		    					 + '                        <img src="' + data.photo_list[1].orgurl + '" alt="thumbnail" onclick="imageLayerShow(this, \'' + data.name + '\', 1, ' + data.photo_list.length + ')">'
-					    		 + '                    </div>';
-					}
-					if(data.photo_list.length >= 3){
-						content += '                    <div class="image">'
-		    					 + '                        <img src="' + data.photo_list[2].orgurl + '" alt="thumbnail" onclick="imageLayerShow(this, \'' + data.name + '\', 2, ' + data.photo_list.length + ')">'
-					    		 + '                    </div>';
-					}
-					content +=	  '                </div>'
-								+ '                <div class="row">';
-					if(data.photo_list.length >= 4){
-					    content += '                    <div class="image">'
-		    					 + '                        <img src="' + data.photo_list[3].orgurl + '" alt="thumbnail" onclick="imageLayerShow(this, \'' + data.name + '\', 3, ' + data.photo_list.length + ')">'
-					    		 + '                    </div>';
-					}
-					if(data.photo_list.length >= 5){
-						content += '                    <div class="image">'
-		    					 + '                        <img src="' + data.photo_list[4].orgurl + '" alt="thumbnail" onclick="imageLayerShow(this, \'' + data.name + '\', 4, ' + data.photo_list.length + ')">'
-					    		 + '                    </div>';
-					}
-					content +=	  '                </div>';
-					content +=	  '        </div>';
-					content +=	  '    </div>';
+				    			+ '            <div class="image-container first">';
+				    if(data.photo_list.length >= 1){
+				    content +=	  '                <div class="image">'
+							+ '                    <img src="' + data.photo_list[0].orgurl + '" alt="thumbnail" onclick="imageLayerShow(this, \'' + data.name + '\', 0, ' + data.photo_list.length + ')">'
+							+ '                </div>';
+				    }
+				    content +=	  '            </div>';
+				
+				    if(data.photo_list.length > 1){
+				        var secondContainerClass = data.photo_list.length == 2 ? "two-img" : ""; // If there are exactly two images, add the 'two-img' class
+				        content += '            <div class="image-container second ' + secondContainerClass + '">'
+							+ '                <div class="row">';
+				        if(data.photo_list.length >= 2){
+				            content += '                    <div class="image">'
+				    		 + '                        <img src="' + data.photo_list[1].orgurl + '" alt="thumbnail" onclick="imageLayerShow(this, \'' + data.name + '\', 1, ' + data.photo_list.length + ')">'
+				    		 + '                    </div>';
+				        }
+				        if(data.photo_list.length >= 4){
+				            content += '                    <div class="image">'
+				    		 + '                        <img src="' + data.photo_list[3].orgurl + '" alt="thumbnail" onclick="imageLayerShow(this, \'' + data.name + '\', 2, ' + data.photo_list.length + ')">'
+				    		 + '                    </div>';
+				        }
+				        content +=	  '                </div>';
+				        if(data.photo_list.length > 2){
+				            content += '                <div class="row">';
+				            if(data.photo_list.length >= 3){
+				                content += '                    <div class="image">'
+				        		 + '                        <img src="' + data.photo_list[2].orgurl + '" alt="thumbnail" onclick="imageLayerShow(this, \'' + data.name + '\', 3, ' + data.photo_list.length + ')">'
+				        		 + '                    </div>';
+				            }
+				            if(data.photo_list.length >= 5){
+				                content += '                    <div class="image">'
+				        		 + '                        <img src="' + data.photo_list[4].orgurl + '" alt="thumbnail" onclick="imageLayerShow(this, \'' + data.name + '\', 4, ' + data.photo_list.length + ')">'
+				        		 + '                    </div>';
+				            }
+				            content +=	  '                </div>';
+				        }
+				        content +=	  '        </div>';
+				    }
+				    content +=	  '    </div>';
 				}
+
+
 	
 				// 주소
-				if(Object.keys(data.address).length > 0){
+				if(data.address && Object.keys(data.address).length > 0){
 					var addressFull = '';
 					if(data.address.addressNo != undefined && data.address.addressNo != "")
 						addressFull = data.address.addressFull + '(' + data.address.addressNo + ')';
@@ -371,24 +399,32 @@ function getPlaceInfo(place, overlay) {
 			overlay.setContent(content);
 			
 			overlay.setMap(map);
-			map.setCenter(overlay.getPosition());
-			$(".custom-overlay").hide().fadeIn(300);
-			// 마우스가 오버레이에 진입하면 원래의 스크롤 기능 비활성화
-			document.querySelector(".custom-overlay").addEventListener('mouseenter', function() {
-			  map.setZoomable(false);
-			});
 			
-			// 마우스가 오버레이에서 벗어나면 원래의 스크롤 기능 활성화
-			document.querySelector(".custom-overlay").addEventListener('mouseleave', function() {
-			  map.setZoomable(true);
-			});
-
-			//닫기 버튼
-			document.querySelector(".custom-overlay .close-btn").addEventListener("click", function(){
-				$(".custom-overlay").fadeOut(300, function(){					
-					removeAllCustomOverlays();
+			var currentPosition = overlay.getPosition();
+			var adjustedLatitude = currentPosition.getLat() - 0.001;
+			var adjustedLongitude = currentPosition.getLng() - 0.003;
+			var adjustedPosition = new kakao.maps.LatLng(adjustedLatitude, adjustedLongitude);
+	
+			map.setCenter(currentPosition);
+			$(".custom-overlay").hide().fadeIn(300);
+			if(document.querySelector(".custom-overlay") != null){
+				// 마우스가 오버레이에 진입하면 원래의 스크롤 기능 비활성화
+				document.querySelector(".custom-overlay").addEventListener('mouseenter', function() {
+				  map.setZoomable(false);
 				});
-			});
+				
+				// 마우스가 오버레이에서 벗어나면 원래의 스크롤 기능 활성화
+				document.querySelector(".custom-overlay").addEventListener('mouseleave', function() {
+				  map.setZoomable(true);
+				});
+	
+				//닫기 버튼
+				document.querySelector(".custom-overlay .close-btn").addEventListener("click", function(){
+					$(".custom-overlay").fadeOut(300, function(){					
+						removeAllCustomOverlays();
+					});
+				});
+			}
 
 			//별점 표시
 			$('#rate').jstars().setValue(data.comment.rating);
@@ -569,24 +605,56 @@ function removeAllHoverOverlays(){
     	ho.setMap(null);
     	currentHoverOverlay.delete(uniqueKey);
   	});
+  	document.querySelectorAll(".hover-overlay").forEach(function(overlay){
+	  overlay.parentElement.remove();
+  	})
 }
 
 // 이미지 확대 레이어
 function imageLayerShow(image, titleStr, current, allCnt){
-	var imgLayer = document.querySelector(".dim .image-layer");
-	var img = document.querySelector(".dim .image-layer .image img");
-	var title = document.querySelector(".dim .image-layer .title");
-	img.setAttribute("src", image.getAttribute("src"));
-	title.innerHTML = titleStr;
-	imgLayer.dataset.allcnt = allCnt;
-	imgLayer.dataset.current = current;
-	prevNextBtn();
-	if(imgLayer.style.display == "none" || imgLayer.style.display == ""){	
-		$(".dim").css("display", "flex").hide().fadeIn("fast", function(){
-			$(".dim .image-layer").css("display", "flex").hide().fadeIn();
-		});
-	}
+    var imgLayer = document.querySelector(".dim .image-layer");
+    var img = document.querySelector(".dim .image-layer .image img");
+    var newImg = new Image();
+
+    newImg.onload = function() {
+        img.src = this.src;
+
+        var maxWidth = window.innerWidth * 0.9;
+        var maxHeight = window.innerHeight * 0.9;
+        var ratio = this.width / this.height;
+
+        var targetWidth = Math.min(maxWidth, this.width);
+        var targetHeight = targetWidth / ratio;
+
+        if (targetHeight > maxHeight) {
+            targetHeight = maxHeight;
+            targetWidth = targetHeight * ratio;
+        }
+
+        imgLayer.style.width = targetWidth + 'px';
+        imgLayer.style.height = targetHeight + 'px';
+
+        imgLayer.dataset.allcnt = allCnt;
+        imgLayer.dataset.current = current;
+        prevNextBtn();
+    }
+    
+    if(imgLayer.style.display == "none" || imgLayer.style.display == ""){
+        $(".dim").css("display", "flex").hide().fadeIn("fast", function(){
+            $(".dim .image-layer").css("display", "flex").hide().fadeIn(function(){
+				this.style.transition = "all 0.3s ease";
+	            this.style.WebkitTransition = "all 0.3s ease";
+	            this.style.MozTransition = "all 0.3s ease";
+	            this.style.MsTransition = "all 0.3s ease";
+	            this.style.OTransition = "all 0.3s ease";
+			});
+        });
+    }
+
+    newImg.src = image.getAttribute("src");
 }
+
+
 
 // 이전, 다음 버튼활성화 함수
 function prevNextBtn(){

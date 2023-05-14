@@ -25,6 +25,13 @@
     		$(this).fadeOut();
     		var layers = document.querySelectorAll(".dim .layer");
     		layers.forEach(function(layer){
+    			if(layer.classList.contains("image-layer")){
+    				layer.style.transition = "unset";
+    				layer.style.WebkitTransition = "unset";
+    				layer.style.MozTransition = "unset";
+    				layer.style.MsTransition = "unset";
+    				layer.style.OTransition = "unset";
+    			}
     			layer.style.display = "none";
     		});
     	});
@@ -89,8 +96,7 @@
   			<div class="container">
   				<div id="map" class="map">
   					<div id="relocate" onclick="relocate();">
-	  					<i class="fa-solid fa-repeat"></i>
-	  					현 위치에서 검색
+	  					<i class="fa-solid fa-repeat"></i>&nbsp;현 위치에서 검색
 	  				</div>
   				</div>
   			</div>
@@ -107,7 +113,6 @@
   			<span>Loading...</span>
   		</div>
   		<div class="layer image-layer" data-allcnt="0" data-current="0">
-  			<div class="title"></div>
   			<div class="image">
   				<img src="http://postfiles15.naver.net/MjAyMDA2MjVfMTEy/MDAxNTkzMDE2NjY0Njk4.QvjPsbJDWAFxIJL2HY4vKE-L1JJbdh1whvfgjrM7HRUg.xxRloYWCYQ4nUr9mr0TiZSabknlGbciPH-7JJqHphZAg.JPEG.birth1012/IMG_8774.jpg?type=w966" alt="큰 이미지">
   			</div>

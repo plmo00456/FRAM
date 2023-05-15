@@ -9,4 +9,6 @@ import com.main.vo.Users;
 public interface UserRepository extends JpaRepository<Users, Long> {
 	
 	Users findById(String id);
+	
+	Users findByEmail(String email);
 }

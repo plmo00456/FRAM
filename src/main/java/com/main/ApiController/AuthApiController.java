@@ -11,10 +11,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -35,6 +38,8 @@ public class AuthApiController {
 	private Integer accessTokenExpire;
 	@Value("${jwt.refresh.token.expire}")
 	private Integer refreshTokenExpire;
+	@Value("${naver.api.clientid}")
+	private String naverClientId;
 
 	private final JwtTokenProvider jwtTokenProvider;
 	@Autowired
@@ -103,5 +108,19 @@ public class AuthApiController {
 			return ResponseEntity.ok().header("Content-Type", "application/json").body(gson.toJson(result));
 		}
 	}
+
+	@GetMapping(value="/oauth2/naver")
+	public ModelAndView NaverLoginCallback(ModelAndView mav, Model model) {
+		mav.addObject("naverClientId", naverClientId);
+		mav.setViewName("auth/naver-callback");
+        return mav;
+    }
+	
+	@PostMapping(value="/login/naver")
+	public ResponseEntity<JwtToken> NaverLoginProc(@RequestBody Map<String, String> loginForm, HttpServletResponse res) {
+		
+		JwtToken token = us.emailLogin(loginForm.get("userId"), loginForm.get("password"), res);
+		return ResponseEntity.ok(token);
+    }
 
 }

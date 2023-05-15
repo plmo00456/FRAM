@@ -48,14 +48,18 @@ public class MainApiController {
 			
             JsonObject data = gson.fromJson(new InputStreamReader(connection.getInputStream()), JsonObject.class);
             
+            urlStr = "https://place.map.kakao.com/photolist/v/" + placeId;
+	        url = new URL(urlStr);
+	        connection = (HttpURLConnection) url.openConnection();
+	        connection.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
+			
+            JsonObject photos = gson.fromJson(new InputStreamReader(connection.getInputStream()), JsonObject.class);
+            
             //이미지 목록
             JsonArray photoList = new JsonArray();
             try {
-	            if (data.has("photo")) {
-		            photoList = data.getAsJsonObject("photo")
-		            .getAsJsonArray("photoList")
-		            .get(1)
-		            .getAsJsonObject()
+	            if (photos.has("photoViewer")) {
+		            photoList = photos.getAsJsonObject("photoViewer")
 		            .getAsJsonArray("list");
 	            }
             }catch(Exception e) {}

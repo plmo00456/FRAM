@@ -10,6 +10,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.openqa.selenium.devtools.v100.fetch.model.AuthRequired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -47,13 +48,13 @@ public class JwtTokenProvider {
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
- 
+        
         long now = (new Date()).getTime();
         // Access Token 생성
         Date accessTokenExpiresIn = new Date(now + accessTokenExpire);
         String accessToken = Jwts.builder()
                 .setSubject(authentication.getName())
-                .claim("auth", authorities)
+                .claim("auth", authorities.equals("") ? "ROLE_USER" : authorities)
                 .setExpiration(accessTokenExpiresIn)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
@@ -94,7 +95,7 @@ public class JwtTokenProvider {
                 Arrays.stream(claims.get("auth").toString().split(","))
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
- 
+        
         // UserDetails 객체를 만들어서 Authentication 리턴
         UserDetails principal = userDetailsService.loadUserByUsername(claims.getSubject());
         
@@ -136,12 +137,12 @@ public class JwtTokenProvider {
         UserDetails userDetails = userDetailsService.loadUserByUsername(userId);
         Date now = new Date();
         Date validity = new Date(now.getTime() + accessTokenExpire);
-        userDetails.getAuthorities();
+        Collection<? extends GrantedAuthority> auth = userDetails.getAuthorities();
         
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(now)
-                .claim("auth", userDetails.getAuthorities())
+                .claim("auth", auth.size() == 0 ? "ROLE_USER" : auth)
                 .setExpiration(validity)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();

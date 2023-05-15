@@ -10,6 +10,7 @@
         <div class="input-box">
             <input type="text" name="userId" maxlength="20" placeholder="아이디">
             <input type="password" name="password" maxlength="50" placeholder="비밀번호">
+            <span class="login-err">아이디 혹은 비밀번호가 일치하지 않습니다</span>
             <input type="button" id="login-btn" class="login-btn" value="로그인">
         </div>
         <div class="find-pass">
@@ -19,7 +20,7 @@
         <div class="sns-login">
             <div class="text">SNS로 간편 로그인 / 회원가입</div>
             <div class="sns-btns">
-                <button>
+                <button id="naver_id_login">
                     <img src="/image/auth/naver_btn.png" alt="네이버 로그인">
                 </button>
                 <button>
@@ -32,6 +33,15 @@
         </div>
     </div>
 </div>
+
+<script>
+	var naver_id_login = new naver_id_login("${naverClientId}", "http://localhost:8080/api/auth/oauth2/naver");
+    var state = naver_id_login.getUniqState();
+    naver_id_login.setDomain("http://localhost:8080/");
+    naver_id_login.setState(state);
+    naver_id_login.setPopup();
+    naver_id_login.init_naver_id_login();
+</script>
 
 <style>
     .user-dim {
@@ -112,7 +122,7 @@
     }
 
     .user-dim .login-layer .input-box input.required{
-        border: 1px solid red;
+        border: 1px solid red !important;
     }
 
     .user-dim .login-layer .input-box input:first-child:focus{
@@ -125,6 +135,17 @@
         outline: none;
         border: 1px solid #7c7c7c;
         border-radius: 0 0 5px 5px;
+    }
+    
+    .user-dim .login-layer .input-box .login-err{
+	    margin: 5px 0 0 5px;
+	    color: red;
+	    font-size: .8rem;
+	    display: none;
+    }
+    
+    .user-dim .login-layer .input-box .login-err.show{
+    	display:block;
     }
 
     .user-dim .login-layer .input-box .login-btn{
@@ -172,6 +193,10 @@
         border: none;
         cursor: pointer;
         margin-right: 6px;
+    }
+    
+    .user-dim .login-layer .sns-login .sns-btns #naver_id_login img{
+   	    border-radius: 30px;
     }
 
 

@@ -59,12 +59,32 @@ public class UsersService {
     public JwtToken login(String id, String password, HttpServletResponse res) {
     	Users user = userRepository.findById(id);
         if (user == null) {
+        	System.out.println(id);
             throw new UsernameNotFoundException("User not found with id: " + id);
         }
         if (!passwordEncoder.matches(password, user.getPassword())) {
+        	System.out.println(password);
             throw new BadCredentialsException("Invalid password");
         }
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(id, password);
+        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+        JwtToken token = jwtTokenProvider.generateToken(authentication, res);
+        
+        return token;
+    }
+    
+    public JwtToken emailLogin(String email, String password, HttpServletResponse res) {
+    	Users user = userRepository.findByEmail(email);
+        if (user == null) {
+        	System.out.println(email);
+            throw new UsernameNotFoundException("User not found with email: " + email);
+        }
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+        	System.out.println(passwordEncoder.encode(password));
+            throw new BadCredentialsException("Invalid password");
+        }
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(email, password);
+        System.out.println(email);
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         JwtToken token = jwtTokenProvider.generateToken(authentication, res);
         

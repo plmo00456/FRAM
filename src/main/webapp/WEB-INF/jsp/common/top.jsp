@@ -39,12 +39,50 @@
 	    document.querySelector(".login-layer-btn").addEventListener("click", function(){
 			$(".user-dim").css("display", "flex").hide().fadeIn("fast", function(){
 				$(".user-dim .login-layer").css("display", "flex").hide().fadeIn();
+				document.querySelector(".login-layer input[name=userId]").focus();
 			});
 		});
 		document.querySelector(".register-layer-btn").addEventListener("click", function(){
-
+			
 		});
+
+		document.querySelector(".login-layer input[name=userId]").addEventListener("keydown", function(){
+			var idInput = document.querySelector(".login-layer input[name=userId]");
+			idInput.classList.remove("required");
+		});
+		
+		document.querySelector(".login-layer input[name=userId]").addEventListener("blur", function(){
+			var idInput = document.querySelector(".login-layer input[name=userId]");
+			if(idInput.value == "") idInput.classList.add("required");
+		});
+		
+		document.querySelector(".login-layer input[name=password]").addEventListener("keydown", function(){
+			var pwInput = document.querySelector(".login-layer input[name=password]");
+			pwInput.classList.remove("required");
+		});
+		
+		document.querySelector(".login-layer input[name=password]").addEventListener("blur", function(){
+			var pwInput = document.querySelector(".login-layer input[name=password]");
+			if(pwInput.value == "") pwInput.classList.add("required");
+		});
+		
 		document.querySelector("#login-btn").addEventListener("click", function(){
+			var idInput = document.querySelector(".login-layer input[name=userId]");
+			var pwInput = document.querySelector(".login-layer input[name=password]");
+			var errTxt = document.querySelector(".login-layer .login-err");
+			if(idInput.value == ""){
+				idInput.classList.add("required");
+				idInput.focus();
+				errTxt.innerHTML = "아이디를 입력해주세요.";
+				errTxt.classList.add("show");
+				return;
+			}else if(pwInput.value == ""){
+				pwInput.classList.add("required");
+				pwInput.focus();
+				errTxt.innerHTML = "비밀번호를 입력해주세요.";
+				errTxt.classList.add("show");
+				return;
+			}
 			$.ajax({
 				url : "/api/auth/login",
 				type: 'POST',
@@ -58,7 +96,9 @@
 					location.reload();
 				},
 				error: function(error) {
-					console.error('Error fetching place rating:', error);
+					var errTxt = document.querySelector(".login-layer .login-err");
+					errTxt.innerHTML = "아이디 혹은 비밀번호가 일치하지 않습니다";
+					errTxt.classList.add("show");
 				}
 			});
 		});

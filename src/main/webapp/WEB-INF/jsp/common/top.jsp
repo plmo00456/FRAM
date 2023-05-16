@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
          pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jstl/core_rt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
 <c:set var="path" value="${requestScope['javax.servlet.forward.servlet_path']}" />
 <div class="top">
@@ -21,6 +22,8 @@
 			</div>
 			<div class="login">
 				<c:if test="${userInfo ne null }">
+					<p class="user-icon">${fn:substring(userInfo.name,0,1)}</p>
+					<p class="user-nickname">${userInfo.nickname}</p>
 					<div class="logout-btn" id="logout-btn"><i class="fa-solid fa-right-from-bracket"></i></div>
 				</c:if>
 				<c:if test="${userInfo eq null }">
@@ -156,6 +159,27 @@
 	.wrap .top .links .login{
 	    display: flex;
         font-size: 1.3rem;
+        justify-content: center;
+        align-items: center;
+	}
+	
+	.wrap .top .links .login .user-icon{
+		width: 20px;
+		height: 20px;
+		padding: 5px;
+		border-radius: 20px;
+		color: #fff;
+		background: #33691d;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		font-size: 1rem;
+	}
+	
+	.wrap .top .links .login .user-nickname{
+		height: fit-content;
+		margin-left: 5px;
+		font-size: 1.2rem;
 	}
 	
 	.wrap .top .links .login > div{

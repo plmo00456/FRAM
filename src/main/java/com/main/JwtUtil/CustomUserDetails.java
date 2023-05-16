@@ -48,6 +48,10 @@ public class CustomUserDetails implements UserDetails {
 		return user.getStatus();
 	}
 	
+	public String getProvide() {
+		return user.getProvide();
+	}
+	
 	@Override
 	public boolean isAccountNonExpired() {
 		return true;

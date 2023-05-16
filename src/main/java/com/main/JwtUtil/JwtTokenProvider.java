@@ -1,5 +1,6 @@
 package com.main.JwtUtil;
 
+
 import java.security.Key;
 import java.util.Arrays;
 import java.util.Collection;
@@ -10,15 +11,12 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.openqa.selenium.devtools.v100.fetch.model.AuthRequired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -49,11 +47,15 @@ public class JwtTokenProvider {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
         
+        CustomUserDetails u = (CustomUserDetails) authentication.getPrincipal();
+        String subject = authentication.getName();
+        if(u.getProvide() != null) subject += "‡" + u.getProvide();
+        
         long now = (new Date()).getTime();
         // Access Token 생성
         Date accessTokenExpiresIn = new Date(now + accessTokenExpire);
         String accessToken = Jwts.builder()
-                .setSubject(authentication.getName())
+                .setSubject(subject)
                 .claim("auth", authorities.equals("") ? "ROLE_USER" : authorities)
                 .setExpiration(accessTokenExpiresIn)
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -61,7 +63,7 @@ public class JwtTokenProvider {
  
         // Refresh Token 생성
         String refreshToken = Jwts.builder()
-        		.setSubject(authentication.getName())
+        		.setSubject(subject)
                 .setExpiration(new Date(now + refreshTokenExpire))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
@@ -98,7 +100,6 @@ public class JwtTokenProvider {
         
         // UserDetails 객체를 만들어서 Authentication 리턴
         UserDetails principal = userDetailsService.loadUserByUsername(claims.getSubject());
-        
         return new UsernamePasswordAuthenticationToken(principal, "", authorities);
     }
  
@@ -135,12 +136,12 @@ public class JwtTokenProvider {
         Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(refreshToken).getBody();
         String userId = claims.getSubject();
         UserDetails userDetails = userDetailsService.loadUserByUsername(userId);
+
         Date now = new Date();
         Date validity = new Date(now.getTime() + accessTokenExpire);
         Collection<? extends GrantedAuthority> auth = userDetails.getAuthorities();
-        
         return Jwts.builder()
-                .setSubject(userDetails.getUsername())
+                .setSubject(userId)
                 .setIssuedAt(now)
                 .claim("auth", auth.size() == 0 ? "ROLE_USER" : auth)
                 .setExpiration(validity)

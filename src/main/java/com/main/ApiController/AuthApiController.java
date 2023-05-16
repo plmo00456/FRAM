@@ -26,6 +26,7 @@ import com.main.JwtUtil.JwtToken;
 import com.main.JwtUtil.JwtTokenProvider;
 import com.main.service.UsersService;
 import com.main.utils.Utils;
+import com.main.vo.Users;
 
 import lombok.RequiredArgsConstructor;
 
@@ -40,6 +41,8 @@ public class AuthApiController {
 	private Integer refreshTokenExpire;
 	@Value("${naver.api.clientid}")
 	private String naverClientId;
+	@Value("${google.api.clientid}")
+	private String googleClientId;
 
 	private final JwtTokenProvider jwtTokenProvider;
 	@Autowired
@@ -118,9 +121,22 @@ public class AuthApiController {
 	
 	@PostMapping(value="/login/naver")
 	public ResponseEntity<JwtToken> NaverLoginProc(@RequestBody Map<String, String> loginForm, HttpServletResponse res) {
+		Users user = new Users();
+		user.setEmail(loginForm.get("userId"));
+		user.setPassword(loginForm.get("password"));
+		user.setName(loginForm.get("name"));
+		user.setNickname(loginForm.get("nickname"));
+		user.setProvide(loginForm.get("provide"));
 		
-		JwtToken token = us.emailLogin(loginForm.get("userId"), loginForm.get("password"), res);
+		JwtToken token = us.emailLogin(user, res);
 		return ResponseEntity.ok(token);
+    }
+	
+	@GetMapping(value="/oauth2/google")
+	public ModelAndView GoogleLoginCallback(ModelAndView mav, Model model) {
+		mav.addObject("googleClientId", googleClientId);
+		mav.setViewName("auth/google-callback");
+        return mav;
     }
 
 }

@@ -26,7 +26,7 @@
                 <button>
                     <img src="/image/auth/kakao_btn.png" alt="카카오 로그인">
                 </button>
-                <button class="google">
+                <button class="google" id="google_id_login">
                     <img src="/image/auth/google_btn.png" alt="구글 로그인">
                 </button>
             </div>
@@ -41,6 +41,10 @@
     naver_id_login.setState(state);
     naver_id_login.setPopup();
     naver_id_login.init_naver_id_login();
+    
+    document.querySelector("#google_id_login").addEventListener("click", function(){
+		window.open('/api/auth/oauth2/google', '구글 로그인', 'width=800, height=600, location=no, toolbar=no, menubar=no, resizable=yes, scrollbars=yes');
+    });
 </script>
 
 <style>

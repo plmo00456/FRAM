@@ -18,29 +18,20 @@
 
     // 네이버 사용자 프로필 조회 이후 프로필 정보를 처리할 callback function
     function naverSignInCallback() {
-    	var div = document.querySelector("div");
-    	console.log(naver_id_login);
-    	var str = '';
-    	str += naver_id_login.getProfileData('email') + "<br>";
-    	str += naver_id_login.getProfileData('nickname') + "<br>";
-    	str += naver_id_login.getProfileData('age') + "<br>";
-    	str += naver_id_login.getProfileData('id') + "<br>";
-    	str += naver_id_login.getProfileData('birthday') + "<br>";
-    	str += naver_id_login.getProfileData('gender') + "<br>";
-    	str += naver_id_login.getProfileData('mobile') + "<br>";
-    	str += naver_id_login.getProfileData('name') + "<br>";
-    	div.innerHTML = str;
-    	
     	$.ajax({
     		url : "/api/auth/login/naver",
     		type: 'POST',
     		contentType: "application/json",
     	    data: JSON.stringify({
     	        "userId": naver_id_login.getProfileData('email'),
-    	        "password": naver_id_login.getProfileData('id')
+    	        "password": naver_id_login.getProfileData('id'),
+    	        "name": naver_id_login.getProfileData('name'),
+    	        "nickname": naver_id_login.getProfileData('nickname'),
+    	        "provide": "naver"
     	    }),
     		success: function(data) {
     			document.cookie = 'accessToken=' + data.accessToken + ';path=/;max-age=' + data.accessExpire;
+    			opener.parent.location.reload();
     			self.close();
     		},
     		error: function(error) {

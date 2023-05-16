@@ -38,6 +38,7 @@ public class Users implements UserDetails {
 	private String email;
 	private String password;
 	private String status;
+	private String provide;
 	@Column(name = "create_tm", updatable = false, insertable = false)
 	private LocalDateTime createTm;
 	@Column(name = "update_tm", updatable = false, insertable = false)

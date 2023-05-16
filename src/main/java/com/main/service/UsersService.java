@@ -59,11 +59,9 @@ public class UsersService {
     public JwtToken login(String id, String password, HttpServletResponse res) {
     	Users user = userRepository.findById(id);
         if (user == null) {
-        	System.out.println(id);
             throw new UsernameNotFoundException("User not found with id: " + id);
         }
         if (!passwordEncoder.matches(password, user.getPassword())) {
-        	System.out.println(password);
             throw new BadCredentialsException("Invalid password");
         }
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(id, password);
@@ -73,18 +71,20 @@ public class UsersService {
         return token;
     }
     
-    public JwtToken emailLogin(String email, String password, HttpServletResponse res) {
-    	Users user = userRepository.findByEmail(email);
+    public JwtToken emailLogin(Users userEntity, HttpServletResponse res) {
+    	String password = userEntity.getPassword();
+    	Users user = userRepository.findByEmailAndProvide(userEntity.getEmail(), userEntity.getProvide());
         if (user == null) {
-        	System.out.println(email);
-            throw new UsernameNotFoundException("User not found with email: " + email);
+        	userEntity.setPassword(passwordEncoder.encode(password));
+        	createUser(userEntity);
+        	userEntity.setPassword(password);
+        	user = userRepository.findByEmailAndProvide(userEntity.getEmail(), userEntity.getProvide());
+            //throw new UsernameNotFoundException("User not found with email: " + email);
         }
-        if (!passwordEncoder.matches(password, user.getPassword())) {
-        	System.out.println(passwordEncoder.encode(password));
+        if (!passwordEncoder.matches(userEntity.getPassword(), user.getPassword())) {
             throw new BadCredentialsException("Invalid password");
         }
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(email, password);
-        System.out.println(email);
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user.getEmail() + "‡" + user.getProvide(), password);
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         JwtToken token = jwtTokenProvider.generateToken(authentication, res);
         

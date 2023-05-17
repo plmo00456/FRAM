@@ -396,6 +396,7 @@ function getPlaceInfo(place, overlay) {
 					    + '                <div id="rate" data-value="' + data.comment.rating + '" data-total-stars="5" data-color="#ffb553" data-empty-color="lightgray" data-size=".9rem"> </div>'
 					    + '                <span id="rate-cnt">' + data.comment.count + '건</span>'
 					    + '            </div>'
+					    + '            <span id="rate-ins">후기작성</span>'
 					    + '        </div>'
 					    + '        <div class="comment-container">';
 	

@@ -132,11 +132,17 @@ public class AuthApiController {
 		return ResponseEntity.ok(token);
     }
 	
-	@GetMapping(value="/oauth2/google")
-	public ModelAndView GoogleLoginCallback(ModelAndView mav, Model model) {
-		mav.addObject("googleClientId", googleClientId);
-		mav.setViewName("auth/google-callback");
-        return mav;
+	@PostMapping(value="/login/google")
+	public ResponseEntity<JwtToken> GoogleLoginProc(@RequestBody Map<String, String> loginForm, HttpServletResponse res) {
+		Users user = new Users();
+		user.setEmail(loginForm.get("userId"));
+		user.setPassword(loginForm.get("password"));
+		user.setName(loginForm.get("name"));
+		user.setNickname(loginForm.get("nickname"));
+		user.setProvide(loginForm.get("provide"));
+		
+		JwtToken token = us.emailLogin(user, res);
+		return ResponseEntity.ok(token);
     }
 
 }

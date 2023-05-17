@@ -73,16 +73,13 @@ public class UsersService {
     
     public JwtToken emailLogin(Users userEntity, HttpServletResponse res) {
     	String password = userEntity.getPassword();
+    	String encPassword = passwordEncoder.encode(password);
     	Users user = userRepository.findByEmailAndProvide(userEntity.getEmail(), userEntity.getProvide());
         if (user == null) {
-        	userEntity.setPassword(passwordEncoder.encode(password));
+        	userEntity.setPassword(encPassword);
         	createUser(userEntity);
-        	userEntity.setPassword(password);
         	user = userRepository.findByEmailAndProvide(userEntity.getEmail(), userEntity.getProvide());
             //throw new UsernameNotFoundException("User not found with email: " + email);
-        }
-        if (!passwordEncoder.matches(userEntity.getPassword(), user.getPassword())) {
-            throw new BadCredentialsException("Invalid password");
         }
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user.getEmail() + "‡" + user.getProvide(), password);
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);

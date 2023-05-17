@@ -448,6 +448,15 @@
 	cursor: pointer;
 }
 
+.custom-overlay #rate-ins{
+    margin: auto 8px 0px auto;
+    font-weight: 600;
+}
+
+.custom-overlay #rate-ins:hover{
+    color: gainsboro;
+}
+
 .custom-overlay {
 	position: absolute;
 	color: #fff;
@@ -467,6 +476,7 @@
 	-moz-user-select: none;
 	-ms-user-select: none;
 	user-select: none;
+	cursor: pointer;
 }
 
 .custom-overlay::after {

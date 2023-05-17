@@ -125,6 +125,20 @@
   				</button>
   			</div>
   		</div>
+  		<div class="layer comment-layer">
+  			<div class="title">후기</div>
+  			<div class="sub-title">별점과 이용후기를 남겨주세요.</div>
+  			<div class="rate">
+  				<div id="rate" data-value="0" data-total-stars="5" data-color="#ffb553" data-empty-color="lightgray" data-size=".9rem"></div>
+  			</div>
+  			<div class="comment">
+  				<textarea>
+  				</textarea>
+  			</div>
+  			<div class="btns">
+  				<button>등록</button>
+  			</div>
+  		</div>
   	</div>
   </body>
 </html>

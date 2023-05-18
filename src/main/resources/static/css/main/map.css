@@ -164,6 +164,10 @@
 	display: none;
 	align-items: center;
 	justify-content: space-between;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 .map #relocate:hover {
@@ -184,6 +188,10 @@
 	left: 20px;
 	box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px
 		rgba(0, 0, 0, 0.22);
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 .custom-overlay>.top {
@@ -215,6 +223,7 @@
 	display: flex;
 	width: 100%;
 	height: 130px;
+    background: #fff;
 }
 
 .custom-overlay .content .image-list .image-container {
@@ -508,4 +517,63 @@
 	font-size: 12px;
 	font-weight: bold;
 	margin-top: 3px;
+}
+
+.map-context-menu{
+    padding: 5px 0;
+    background: #fff;
+    border-radius: 5px;
+    box-shadow: 2px 2px 7px rgba(0, 0, 0, 0.4);
+    font-size: .9rem;
+    width: 150px;
+}
+
+.map-context-menu .item{
+    padding: 6px 10px;
+    cursor: pointer;
+}
+
+.map-context-menu .item:hover{
+    background: #f6f6f6;
+}
+
+.map-context-menu .item i{
+   	color: #b7b7b7;
+    margin-right: 5px;
+}
+
+.swal2-close:focus{
+    box-shadow: none;
+}
+
+.comment-layer .sub-title{
+    font-size: 1rem;
+    margin-bottom: 10px;
+}
+
+.comment-layer .comment textarea{
+    border: none;
+    width: 92%;
+    outline: 1px solid #a5a5a5;
+    height: 100px;
+    padding: 13px;
+    text-decoration: none;
+    resize: none;
+    color: #1f1f1f;
+}
+
+.comment-layer .rate-box{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+	margin-bottom: 5px;
+}
+
+.comment-layer .rate-box .val{
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.rate-box:hover .jq-ry-rated-group svg{
+	fill: #ffd8a5;
 }

@@ -8,6 +8,8 @@
 <script src="https://apis.google.com/js/platform.js" async defer></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://kit.fontawesome.com/790b1811b6.js" crossorigin="anonymous"></script>
+<script src="/plugin/sweet-alert/sweetalert2.all.min.js"></script>
 <script src="/js/util/util.js"></script>
     
 <link href="/css/common/basic.css" rel="stylesheet" type="text/css" />
+<link href="/plugin/sweet-alert/sweetalert2.min.css" rel="stylesheet" type="text/css" />

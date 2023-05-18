@@ -43,7 +43,6 @@
     naver_id_login.init_naver_id_login();
     
     Kakao.init('${kakaoClientId}');
-    console.log(Kakao.isInitialized());
     function kakaoLogin() {
         Kakao.Auth.login({
           success: function (response) {

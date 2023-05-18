@@ -4,7 +4,6 @@
  * rating.css
  */
 
-
 var latitude = 37.566826;
 var longitude = 126.9786567;
 var mapInitChk = false; // 맵 초기화 여부
@@ -16,7 +15,6 @@ var clusterer; // 클러스터
 var currentOverlay = new Map(); // 현재 열려 있는 오버레이
 var currentHoverOverlay = new Map(); // 현재 열려 있는 마우스오버 오버레이
 var markers = [];   // 마커
-//var keywords = ['식당', '카페', '맛집', '음식', '요리'];
 var keywords = ['식당', '카페', '맛집', '음식', '요리', '레스토랑', '뷔페', '바', '퍼브', '이탈리아 음식', '한식', '중식', '일식', '양식', '빵집', '파스타', '피자', '스시', '라멘', '순두부', '김밥', '떡볶이', '치킨', '햄버거', '도넛', '아이스크림', '디저트 카페', '마라탕', '초밥', '피자'];
 
 var infowindow = new kakao.maps.InfoWindow({
@@ -24,9 +22,11 @@ var infowindow = new kakao.maps.InfoWindow({
 });
 var mapContainer;
 var mapOption = {
-		center: new kakao.maps.LatLng(latitude, longitude),
-		level: 4
-	};
+	center: new kakao.maps.LatLng(latitude, longitude),
+	level: 4,
+	minLevel: 2,
+	maxLevel: 10
+};
 
 function getUserLocation() {
 	if (!navigator.geolocation) {
@@ -66,10 +66,7 @@ function mapInit() {
 		        y: latitude
 		    });
 		}
-		map.setMinLevel(2);
-		map.setMaxLevel(10);
 		map.setCenter(new kakao.maps.LatLng(latitude, longitude));
-		map.setLevel(4);
 		clusterer = new kakao.maps.MarkerClusterer({
 			map: map,
 			averageCenter: true,
@@ -89,13 +86,61 @@ function mapInit() {
 		        fontWeight: 'bold',
 		    }]
 		});
-		if (locYn) {
-			var userMarkerPosition = new kakao.maps.LatLng(latitude, longitude);
-			userMarker = new kakao.maps.Marker({
-				position: userMarkerPosition
-			});
-			userMarker.setMap(map);
-		}
+		if (locYn) setUserMarker(latitude, longitude);
+		kakao.maps.event.addListener(map, 'rightclick', function(mouseEvent) {
+			removeAllContextMenu();
+	        var menu = new kakao.maps.CustomOverlay({
+	          content: '<div class="map-context-menu"><div class="item" data-menu="1"><i class="fa-solid fa-location-crosshairs"></i>내 위치 지정</div></div>',
+	          position: mouseEvent.latLng,
+	          xAnchor: 0.5,
+	          yAnchor: 0.5
+	        });
+	
+	        // 컨텍스트 메뉴 표시
+	        menu.setMap(map);
+	
+	        if(document.querySelector(".map-context-menu")){
+	        	document.querySelector(".map-context-menu").addEventListener("click", function(e){
+					switch(e.target.dataset.menu){
+						case "1":
+							Swal.fire({
+							   title: '내 위치 지정',
+							   text: '처음 화면 접속 시 지정한 위치 주변 식당을 검색합니다.',
+							   icon: 'warning',
+							   
+							   showCancelButton: true,
+							   confirmButtonColor: '#6c55f7',
+							   cancelButtonColor: '#d33',
+							   confirmButtonText: '지정',
+							   cancelButtonText: '취소',
+							   
+							}).then(result => {
+							   if (result.isConfirmed) {
+								   var Toast = Swal.mixin({
+									    toast: true,
+									    position: 'center',
+									    showConfirmButton: false,
+									    timer: 1500,
+									    timerProgressBar: true,
+									    didOpen: (toast) => {
+										    toast.addEventListener('click', Swal.close)
+										}
+									})
+									Toast.fire({
+									    icon: 'success',
+									    title: '위치 변경이 완료되었습니다.',
+									})
+							   	  	setUserMarker(mouseEvent.latLng.Ma, mouseEvent.latLng.La);
+							   	  	map.setCenter(new kakao.maps.LatLng(mouseEvent.latLng.Ma, mouseEvent.latLng.La));
+							   	  	map.setLevel(mapOption.level);
+							   }
+							});
+							break;
+					}
+		            menu.setMap(null);
+		        });
+			}
+	    });
 		$('#rate').jstars();
 	}catch{
 		
@@ -103,6 +148,23 @@ function mapInit() {
 		$(".dim").hide();
 		$(".dim .loading-layer").hide();
 	}
+}
+
+function setUserMarker(lat, lng){
+	if(userMarker)
+		userMarker.setMap(null);
+	var userMarkerPosition = new kakao.maps.LatLng(lat, lng);
+	var imageSize = new kakao.maps.Size(35, 45),
+		imageOptions = {
+			spriteOrigin: new kakao.maps.Point(0, 0),
+			spriteSize: new kakao.maps.Size(35, 45)
+	};
+	var userMarkerImage = new kakao.maps.MarkerImage('/image/user-marker.png', imageSize, imageOptions);
+	userMarker = new kakao.maps.Marker({
+		position: userMarkerPosition,
+		image: userMarkerImage
+	});
+	userMarker.setMap(map);
 }
 
 function placesSearchCB(data, status, pagination) {
@@ -458,6 +520,39 @@ function getPlaceInfo(place, overlay) {
 					});
 				});
 			}
+			
+			if(document.querySelector("#rate-ins")){
+				document.querySelector("#rate-ins").addEventListener("click", function(){
+					Swal.fire({
+					  title: '<strong>' + data.name + '</strong>',
+					  html:
+					    '<div class="layer comment-layer" data-placeid="' + place.id + '">' +
+							'<div class="sub-title">별점과 이용후기를 남겨주세요.</div>'+
+							'<div class="rate-box">'+
+								'<div class="rate"></div>'+
+							'</div>'+
+					  		'<div class="comment">'+
+						  		'<textarea>'+
+					  			'</textarea>'+
+					  		'</div>'+
+					  '</div>',
+					  showCloseButton: true,
+					  showCancelButton: true,
+					  confirmButtonColor: '#6c55f7',
+					  cancelButtonColor: '#d33',
+					  confirmButtonText: '등록',
+					  cancelButtonText: '취소',
+					  focusConfirm: false,
+					});
+					
+					$(".comment-layer .rate-box .rate").rateYo({
+						halfStar: true,
+						normalFill: "#d3d3d3",
+					  	ratedFill: "#ffb553"
+					});
+					
+				});
+			}
 
 			//별점 표시
 			$('#rate').jstars().setValue(data.comment.rating);
@@ -643,6 +738,14 @@ function removeAllHoverOverlays(){
   	})
 }
 
+// 모든 컨텍스트 메뉴 삭제
+function removeAllContextMenu(){
+	var mapContextMenu = document.querySelectorAll(".map-context-menu");
+	mapContextMenu.forEach(function(cmenu){
+		cmenu.parentElement.remove();
+	});
+}
+
 // 이미지 확대 레이어
 function imageLayerShow(image, titleStr, current, allCnt){
     var imgLayer = document.querySelector(".dim .image-layer");
@@ -761,4 +864,40 @@ function prevNextBtn(){
 function prevNextImage(i){
 	var imgs = document.querySelectorAll(".custom-overlay .image-list .image img, .custom-overlay .image-list .images img");
 	imgs[i].click();
+}
+
+// 내 정보 가져오기
+function getUserInfo(){
+	var result;
+	var loginLayerBtn = document.querySelector(".login-layer-btn");
+	$.ajax({
+		url: '/api/auth/getMe',
+		type: 'POST',
+		async: false,
+		success: function(data) {
+			if(data.status == "Y"){
+				result = data;
+			}else{
+				if(loginLayerBtn){
+					loginLayerBtn.click();
+				}else{
+					document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+					document.cookie = 'accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+					window.location.hash = 'relogin';
+					window.location.reload();
+				}
+			}
+		},
+		error: function(error) {
+			if(loginLayerBtn){
+				loginLayerBtn.click();
+			}else{
+				document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+				document.cookie = 'accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+				window.location.hash = 'relogin';
+				window.location.reload();
+			}
+		}
+	});
+	return result;
 }

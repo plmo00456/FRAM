@@ -1,5 +1,6 @@
 package com.main.ApiController;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,11 +22,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.main.JwtUtil.CustomUserDetails;
 import com.main.JwtUtil.JwtToken;
 import com.main.JwtUtil.JwtTokenProvider;
 import com.main.service.UsersService;
+import com.main.utils.LocalDateTimeSerializer;
 import com.main.utils.Utils;
 import com.main.vo.Users;
 
@@ -82,30 +86,48 @@ public class AuthApiController {
 		}
 	}
 	
-	@PostMapping("/getme")
-	public ResponseEntity<String> GetUserInfo(HttpServletRequest req, HttpServletResponse res) {
-		Gson gson = new Gson();
+	@PostMapping("/getMe")
+	public ResponseEntity<String> getMe(HttpServletRequest req, HttpServletResponse res) {
+		Gson gson = new GsonBuilder()
+                .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeSerializer())
+                .create();
 		JsonObject result = new JsonObject();
-		String accessToken = jwtTokenProvider.resolveToken(req);
-		
-		Authentication auth = jwtTokenProvider.getAuthentication(accessToken);
-		
+		Optional<Cookie> accessTokenCookie = Utils.getHttpOnlyCookie(req, "accessToken");
+		String accessToken = "";
 		result.addProperty("status", "N");
-		boolean validateToken = jwtTokenProvider.validateToken(accessToken);
-		if (accessToken != null && validateToken) {
-			try {
-				auth = jwtTokenProvider.getAuthentication(accessToken);
-				
-				result.addProperty("status", "Y");
-				result.add("user",  gson.toJsonTree((CustomUserDetails) auth.getPrincipal()).getAsJsonObject());
-				return ResponseEntity.ok().header("Content-Type", "application/json").body(gson.toJson(result));
-			} catch (Exception e) {
-				result.addProperty("msg", "Expired JWT Token");
-				result.addProperty("code", "001");
-				e.fillInStackTrace();
+		if (accessTokenCookie.isPresent()) {
+			try {				
+				accessToken = accessTokenCookie.get().getValue();
+				Authentication auth = jwtTokenProvider.getAuthentication(accessToken);
+				boolean validateToken = jwtTokenProvider.validateToken(accessToken);
+				if (accessToken != null && validateToken) {
+					try {
+						auth = jwtTokenProvider.getAuthentication(accessToken);
+						
+						result.addProperty("status", "Y");
+						Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+						CustomUserDetails userInfo = ((CustomUserDetails)principal);
+						userInfo.setPassword("");
+						result.add("user",  gson.toJsonTree((CustomUserDetails)principal).getAsJsonObject());
+						return ResponseEntity.ok().header("Content-Type", "application/json").body(gson.toJson(result));
+					} catch (Exception e) {
+						e.printStackTrace();
+						result.addProperty("msg", "Expired JWT Token");
+						result.addProperty("code", "001");
+						e.fillInStackTrace();
+						return ResponseEntity.ok().header("Content-Type", "application/json").body(gson.toJson(result));
+					}
+				} else {
+					result.addProperty("msg", "Invalid JWT Token");
+					result.addProperty("code", "002");
+					return ResponseEntity.ok().header("Content-Type", "application/json").body(gson.toJson(result));
+				}
+			}catch(Exception e) {
+				result.addProperty("msg", "Invalid JWT Token");
+				result.addProperty("code", "002");
 				return ResponseEntity.ok().header("Content-Type", "application/json").body(gson.toJson(result));
 			}
-		} else {
+		}else {
 			result.addProperty("msg", "Invalid JWT Token");
 			result.addProperty("code", "002");
 			return ResponseEntity.ok().header("Content-Type", "application/json").body(gson.toJson(result));

@@ -64,7 +64,6 @@ public class MainApiController {
 	            }
             }catch(Exception e) {}
             result.add("photo_list", photoList);
-            
 
             // 카카오 평가 점수
             JsonObject kRating = new JsonObject();

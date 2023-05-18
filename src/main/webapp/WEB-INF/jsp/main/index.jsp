@@ -9,17 +9,28 @@
     <title>내주변맛집</title>
     
     <c:import url="/common/files" charEncoding="UTF-8"/>
-    
+
+	<link href="/plugin/rateyo/jquery.rateyo.min.css" rel="stylesheet" type="text/css" />    
     <link href="/css/main/main.css" rel="stylesheet" type="text/css" />
     <link href="/css/main/map.css" rel="stylesheet" type="text/css" />
 
     <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoAppKey}&libraries=services,clusterer"></script>
     <script src="/plugin/star-rating/jstars.js"></script>
+    <script src="/plugin/rateyo/jquery.rateyo.min.js"></script>
 
     <script src="/js/main/map.js"></script>
 
     <script>
       $(document).ready(function() {
+    	if (window.location.hash == '#relogin') {
+    		var loginLayerBtn = document.querySelector(".login-layer-btn");
+    		loginLayerBtn.click();
+    		window.location.hash = "";
+  		}
+    	  
+   	  	document.addEventListener("click", function() {
+   	 		removeAllContextMenu();
+   	  	});
     	document.querySelector(".dim").addEventListener("click", function(e){
     		if (e.target !== e.currentTarget) return;
     		$(this).fadeOut();
@@ -123,20 +134,6 @@
   				<button class="right">
   					<i class="fa-solid fa-chevron-right"></i>
   				</button>
-  			</div>
-  		</div>
-  		<div class="layer comment-layer">
-  			<div class="title">후기</div>
-  			<div class="sub-title">별점과 이용후기를 남겨주세요.</div>
-  			<div class="rate">
-  				<div id="rate" data-value="0" data-total-stars="5" data-color="#ffb553" data-empty-color="lightgray" data-size=".9rem"></div>
-  			</div>
-  			<div class="comment">
-  				<textarea>
-  				</textarea>
-  			</div>
-  			<div class="btns">
-  				<button>등록</button>
   			</div>
   		</div>
   	</div>

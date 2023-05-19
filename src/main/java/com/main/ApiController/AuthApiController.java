@@ -106,9 +106,9 @@ public class AuthApiController {
 						
 						result.addProperty("status", "Y");
 						Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-						CustomUserDetails userInfo = ((CustomUserDetails)principal);
+						Users userInfo = ((CustomUserDetails)principal).getUser();
 						userInfo.setPassword("");
-						result.add("user",  gson.toJsonTree((CustomUserDetails)principal).getAsJsonObject());
+						result.add("user",  gson.toJsonTree(userInfo).getAsJsonObject());
 						return ResponseEntity.ok().header("Content-Type", "application/json").body(gson.toJson(result));
 					} catch (Exception e) {
 						e.printStackTrace();

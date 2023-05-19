@@ -13,6 +13,8 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import org.springframework.security.core.GrantedAuthority;
@@ -43,6 +45,10 @@ public class Users implements UserDetails {
 	private LocalDateTime createTm;
 	@Column(name = "update_tm", updatable = false, insertable = false)
 	private LocalDateTime updateTm;
+	
+	@OneToOne
+    @JoinColumn(name = "seq", referencedColumnName = "users_seq")
+    private UsersLocation location;
 	
 	@ElementCollection(fetch = FetchType.EAGER)
     @Builder.Default

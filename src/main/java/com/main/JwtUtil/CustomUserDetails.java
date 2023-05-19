@@ -36,6 +36,10 @@ public class CustomUserDetails implements UserDetails {
 		return user.getId() == null ? user.getEmail() : user.getId();
 	}
 	
+	public Long getSeq() {
+		return user.getSeq();
+	}
+	
 	public String getName() {
 		return user.getName();
 	}
@@ -54,6 +58,10 @@ public class CustomUserDetails implements UserDetails {
 	
 	public String getProvide() {
 		return user.getProvide();
+	}
+	
+	public Users getUser() {
+		return user;
 	}
 	
 	@Override

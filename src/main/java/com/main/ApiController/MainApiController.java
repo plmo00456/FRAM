@@ -5,9 +5,16 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,20 +24,33 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.main.JwtUtil.CustomUserDetails;
+import com.main.JwtUtil.JwtTokenProvider;
 import com.main.service.CommentService;
+import com.main.service.UsersLocationService;
 import com.main.service.UsersService;
 import com.main.utils.LocalDateTimeSerializer;
+import com.main.utils.Utils;
 import com.main.vo.Comment;
+import com.main.vo.Users;
+
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api")
+@RequiredArgsConstructor
 public class MainApiController {
 	
 	@Autowired
 	private UsersService us;
 	
 	@Autowired
+	private UsersLocationService uls;
+	
+	@Autowired
 	private CommentService cs;
+	
+	private final JwtTokenProvider jwtTokenProvider;
 	
 	@PostMapping("/get-place-info")
 	public ResponseEntity<String> GetPlaceInfo(@RequestParam(value="place_id", required = false) Integer placeId) {
@@ -213,5 +233,64 @@ public class MainApiController {
 		
 		return ResponseEntity.ok().header("Content-Type", "application/json").body(gson.toJson(result));
 	}
+	
+	@PostMapping("/set-user-location")
+	public ResponseEntity<String> SetUserLocation(HttpServletRequest req, HttpServletResponse res, @RequestParam(value="lat", required = false) String lat, @RequestParam(value="lon", required = false) String lon) {
+		Gson gson = new GsonBuilder()
+                .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeSerializer())
+                .create();
+		JsonObject result = new JsonObject();
+		Optional<Cookie> accessTokenCookie = Utils.getHttpOnlyCookie(req, "accessToken");
+		String accessToken = "";
+		result.addProperty("status", "N");
+		if (accessTokenCookie.isPresent()) {
+			try {				
+				accessToken = accessTokenCookie.get().getValue();
+				Authentication auth = jwtTokenProvider.getAuthentication(accessToken);
+				boolean validateToken = jwtTokenProvider.validateToken(accessToken);
+				if (accessToken != null && validateToken) {
+					try {
+						auth = jwtTokenProvider.getAuthentication(accessToken);
+						
+						Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+						CustomUserDetails userInfo = ((CustomUserDetails)principal);
+						Long seq = userInfo.getSeq();
+						if(seq != null && userInfo != null) {
+							Optional<Users> user = us.getUser(userInfo.getSeq());
+							if(user.isPresent()) {
+								uls.insertUpdateUserLocation(seq, lat, lon);
+								result.addProperty("status", "Y");
+							}else {
+								throw new Exception("오류");
+							}
+						}else {
+							throw new Exception("오류");
+						}
+						
+						return ResponseEntity.ok().header("Content-Type", "application/json").body(gson.toJson(result));
+					} catch (Exception e) {
+						e.printStackTrace();
+						result.addProperty("msg", "로그인이 만료되었습니다.<br>다시 로그인 해주세요.");
+						result.addProperty("code", "001");
+						e.fillInStackTrace();
+						return ResponseEntity.ok().header("Content-Type", "application/json").body(gson.toJson(result));
+					}
+				} else {
+					result.addProperty("msg", "잘못된 계정 정보입니다.<br>다시 로그인 해주세요.");
+					result.addProperty("code", "002");
+					return ResponseEntity.ok().header("Content-Type", "application/json").body(gson.toJson(result));
+				}
+			}catch(Exception e) {
+				result.addProperty("msg", "잘못된 계정 정보입니다.<br>다시 로그인 해주세요.");
+				result.addProperty("code", "002");
+				return ResponseEntity.ok().header("Content-Type", "application/json").body(gson.toJson(result));
+			}
+		}else {
+			result.addProperty("msg", "잘못된 계정 정보입니다.<br>다시 로그인 해주세요.");
+			result.addProperty("code", "002");
+			return ResponseEntity.ok().header("Content-Type", "application/json").body(gson.toJson(result));
+		}
+	}
+	
 	
 }

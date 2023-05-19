@@ -32,7 +32,19 @@ function getUserLocation() {
 	if (!navigator.geolocation) {
 		errorLoc();
 	} else {
-		navigator.geolocation.watchPosition(successLoc, errorLoc);
+		var userInfo = getUserInfo();
+		if(userInfo){
+			if(userInfo.user.location){
+				locYn = true;
+				latitude = userInfo.user.location.latitude;
+				longitude = userInfo.user.location.longitude;
+				if (!mapInitChk) mapInit();
+			}else{
+				navigator.geolocation.watchPosition(successLoc, errorLoc);
+			}
+		}else{		
+			navigator.geolocation.watchPosition(successLoc, errorLoc);
+		}
 	}
 }
 
@@ -115,24 +127,47 @@ function mapInit() {
 							   cancelButtonText: '취소',
 							   
 							}).then(result => {
+								var Toast = Swal.mixin({
+								    toast: true,
+								    position: 'center',
+								    showConfirmButton: false,
+								    timer: 2000,
+								    timerProgressBar: true,
+								    didOpen: (toast) => {
+									    toast.addEventListener('click', Swal.close)
+									}
+								})
 							   if (result.isConfirmed) {
-								   var Toast = Swal.mixin({
-									    toast: true,
-									    position: 'center',
-									    showConfirmButton: false,
-									    timer: 1500,
-									    timerProgressBar: true,
-									    didOpen: (toast) => {
-										    toast.addEventListener('click', Swal.close)
+								   $.ajax({
+										url: '/api/set-user-location',
+										type: 'POST',
+										data: {
+											'lat' : mouseEvent.latLng.Ma,
+											'lon' : mouseEvent.latLng.La
+										},
+										success: function(data) {
+											if(data.status == "Y"){
+												Toast.fire({
+												    icon: 'success',
+												    title: '위치 변경이 완료되었습니다.',
+												})
+										   	  	setUserMarker(mouseEvent.latLng.Ma, mouseEvent.latLng.La);
+										   	  	map.setCenter(new kakao.maps.LatLng(mouseEvent.latLng.Ma, mouseEvent.latLng.La));
+										   	  	map.setLevel(mapOption.level);												
+											}else{
+												Toast.fire({
+												    icon: 'error',
+												    title: data.msg,
+												});
+											}
+										},
+										error: function(error) {
+											Toast.fire({
+											    icon: 'error',
+											    title: error.msg,
+											})
 										}
-									})
-									Toast.fire({
-									    icon: 'success',
-									    title: '위치 변경이 완료되었습니다.',
-									})
-							   	  	setUserMarker(mouseEvent.latLng.Ma, mouseEvent.latLng.La);
-							   	  	map.setCenter(new kakao.maps.LatLng(mouseEvent.latLng.Ma, mouseEvent.latLng.La));
-							   	  	map.setLevel(mapOption.level);
+									});
 							   }
 							});
 							break;
@@ -867,7 +902,7 @@ function prevNextImage(i){
 }
 
 // 내 정보 가져오기
-function getUserInfo(){
+function getUserInfo(mode){
 	var result;
 	var loginLayerBtn = document.querySelector(".login-layer-btn");
 	$.ajax({
@@ -878,6 +913,20 @@ function getUserInfo(){
 			if(data.status == "Y"){
 				result = data;
 			}else{
+				if(mode == "login"){					
+					if(loginLayerBtn){
+						loginLayerBtn.click();
+					}else{
+						document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+						document.cookie = 'accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+						window.location.hash = 'relogin';
+						window.location.reload();
+					}
+				}
+			}
+		},
+		error: function(error) {
+			if(mode == "login"){
 				if(loginLayerBtn){
 					loginLayerBtn.click();
 				}else{
@@ -886,16 +935,6 @@ function getUserInfo(){
 					window.location.hash = 'relogin';
 					window.location.reload();
 				}
-			}
-		},
-		error: function(error) {
-			if(loginLayerBtn){
-				loginLayerBtn.click();
-			}else{
-				document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-				document.cookie = 'accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-				window.location.hash = 'relogin';
-				window.location.reload();
 			}
 		}
 	});

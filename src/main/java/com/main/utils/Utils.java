@@ -40,4 +40,12 @@ public class Utils {
 	        e.printStackTrace();
 	    }
 	}
+	
+	// replaceXss
+	public static String replaceXSS(String value) {
+		if(value != null) {
+			value = value.replaceAll("\\<", "&lt;").replaceAll("\\>", "&gt;").replaceAll("\\(", "&#40;").replaceAll("\\)", "&#41;");
+		}
+		return value;
+	}
 }

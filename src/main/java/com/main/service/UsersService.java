@@ -1,7 +1,5 @@
 package com.main.service;
 
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,7 +14,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.main.JwtUtil.JwtToken;
 import com.main.JwtUtil.JwtTokenProvider;

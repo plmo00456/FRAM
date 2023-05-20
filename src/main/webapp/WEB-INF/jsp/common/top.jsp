@@ -172,19 +172,28 @@
 		var nameInput = document.querySelector(".register-layer input[name=name]");
 		var termChkInput = document.querySelector(".register-layer input[name=termsCheck]");
 		var errTxt = document.querySelector(".register-layer .login-err");
+		
+		var pwReg =  /^(?=.*[A-Za-z])(?=.*\d)(?=.*[\W_])[A-Za-z\d\W_]{8,20}$/;
+		
 		if(idInput.value == "") {
 			idInput.classList.add("required");
 			idInput.focus();
 			errTxt.innerHTML = "아이디를 입력해주세요.";
 			errTxt.classList.add("show");
 			return;
-		} else if(pwInput.value == "") {
+		}else if(pwInput.value == "") {
 			pwInput.classList.add("required");
 			pwInput.focus();
 			errTxt.innerHTML = "비밀번호를 입력해주세요.";
 			errTxt.classList.add("show");
 			return;
-		} else if(pwConfirmInput.value == "") {
+		}else if(!pwReg.test(pwInput.value)){
+			pwInput.classList.add("required");
+			pwInput.focus();
+			errTxt.innerHTML = "영문, 숫자, 특수기호, 조합 8~20자리를 사용해야 합니다.";
+			errTxt.classList.add("show");
+			return;
+		}else if(pwConfirmInput.value == "") {
 			pwConfirmInput.classList.add("required");
 			pwConfirmInput.focus();
 			errTxt.innerHTML = "비밀번호를 입력해주세요.";

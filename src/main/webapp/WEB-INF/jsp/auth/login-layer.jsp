@@ -9,7 +9,7 @@
         </div>
         <div class="input-box">
             <input type="text" name="userId" maxlength="20" placeholder="아이디">
-            <input type="password" name="password" maxlength="50" placeholder="비밀번호">
+            <input type="password" name="password" maxlength="30" placeholder="비밀번호">
             <span class="login-err">아이디 혹은 비밀번호가 일치하지 않습니다</span>
             <input type="button" id="login-btn" class="login-btn" value="로그인">
         </div>
@@ -40,30 +40,8 @@
         </div>
         <div class="input-box">
             <input type="text" name="userId" maxlength="20" placeholder="아이디">
-            <input type="password" name="password" maxlength="50" placeholder="비밀번호">
-            <input type="password" name="passwordConfirm" maxlength="50" placeholder="비밀번호 확인">
-            <input type="text" name="name" maxlength="20" placeholder="이름">
-            <span class="login-err">비밀번호가 일치하지 않습니다.</span>
-            <div class="terms">
-            	<strong>회원정보보호 및 대책</strong>
-            	<br><br>
-            	1. 개인정보 수집 목적 및 이용
-            </div>
-            <label class="terms-check-box">
-            	<input type="checkbox" name="termsCheck"> 개인정보 수집이용에 동의합니다.
-            </label>
-            <input type="button" id="register-btn" class="register-btn" value="회원가입">
-        </div>
-    </div>
-    
-    <div class="register-layer user-layer layer">
-        <div class="logo">
-            <img src="/image/logo.png" alt="로고">
-        </div>
-        <div class="input-box">
-            <input type="text" name="userId" maxlength="20" placeholder="아이디">
-            <input type="password" name="password" maxlength="50" placeholder="비밀번호">
-            <input type="password" name="passwordConfirm" maxlength="50" placeholder="비밀번호 확인">
+            <input type="password" name="password" maxlength="30" placeholder="비밀번호">
+            <input type="password" name="passwordConfirm" maxlength="30" placeholder="비밀번호 확인">
             <input type="text" name="name" maxlength="20" placeholder="이름">
             <span class="login-err">비밀번호가 일치하지 않습니다.</span>
             <div class="terms">

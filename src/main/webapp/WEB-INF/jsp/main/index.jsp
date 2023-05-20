@@ -22,6 +22,13 @@
 
     <script>
       $(document).ready(function() {
+	   	tippy('.login-layer-btn', {
+	   		content: "로그인",
+	   	});
+	   	tippy('.register-layer-btn', {
+	   		content: "회원가입",
+	   	});
+    	  
     	if (window.location.hash == '#relogin') {
     		var loginLayerBtn = document.querySelector(".login-layer-btn");
     		loginLayerBtn.click();
@@ -123,9 +130,9 @@
   			<img src="/image/loading.gif">
   			<span>Loading...</span>
   		</div>
-  		<div class="layer image-layer" data-allcnt="0" data-current="0">
+  		<div class="layer image-layer" data-allcnt="0" data-current="0" data-mode="">
   			<div class="image">
-  				<img src="http://postfiles15.naver.net/MjAyMDA2MjVfMTEy/MDAxNTkzMDE2NjY0Njk4.QvjPsbJDWAFxIJL2HY4vKE-L1JJbdh1whvfgjrM7HRUg.xxRloYWCYQ4nUr9mr0TiZSabknlGbciPH-7JJqHphZAg.JPEG.birth1012/IMG_8774.jpg?type=w966" alt="큰 이미지">
+  				<img src="" alt="큰 이미지">
   			</div>
   			<div class="btns">
   				<button class="left">

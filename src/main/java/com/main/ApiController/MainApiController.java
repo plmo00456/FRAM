@@ -4,6 +4,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -13,7 +14,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -30,11 +31,13 @@ import com.google.gson.JsonObject;
 import com.main.JwtUtil.CustomUserDetails;
 import com.main.JwtUtil.JwtTokenProvider;
 import com.main.service.CommentService;
+import com.main.service.FileMasterService;
 import com.main.service.UsersLocationService;
 import com.main.service.UsersService;
 import com.main.utils.LocalDateTimeSerializer;
 import com.main.utils.Utils;
 import com.main.vo.Comment;
+import com.main.vo.FileMaster;
 import com.main.vo.Users;
 
 import lombok.RequiredArgsConstructor;
@@ -52,6 +55,9 @@ public class MainApiController {
 	
 	@Autowired
 	private CommentService cs;
+	
+	@Autowired
+	private FileMasterService fs;
 	
 	private final JwtTokenProvider jwtTokenProvider;
 	
@@ -184,16 +190,20 @@ public class MainApiController {
             
             // 로컬 평점
             JsonObject comment = new JsonObject();
+            int allImageCnt = 0;
             try {
             	List<Comment> comments = cs.findCommentsByPlaceIdWithUser(Integer.parseInt(formData.get("placeId")+""));
             	double ratingValue = 0;
-            	for(int i=0; i<comments.size(); i++)
+            	for(int i=0; i<comments.size(); i++) {
+            		if(comments.get(i).getImage() != null)allImageCnt++;
             		ratingValue += comments.get(i).getRating();
+            	}
             	ratingValue = comments.size() > 0 ? ratingValue / comments.size() : 0; 
             	
             	JsonArray jArrayComments = gson.toJsonTree(comments).getAsJsonArray();
             	comment.addProperty("count", comments.size());
             	comment.addProperty("rating", String.format("%.1f", ratingValue));
+            	comment.addProperty("allCnt", allImageCnt);
             	comment.add("comments", jArrayComments);
             	
             	result.add("comment", comment);
@@ -296,7 +306,7 @@ public class MainApiController {
 	}
 	
 	@PostMapping("/place/set-comment")
-	public ResponseEntity<String> setComment(HttpServletRequest req, HttpServletResponse res, @RequestBody Map<String, String> commentForm) {
+	public ResponseEntity<String> setComment(HttpServletRequest req, HttpServletResponse res, @RequestParam HashMap commentForm, @RequestParam("imageFile") MultipartFile imageFile) {
 		Gson gson = new GsonBuilder()
                 .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeSerializer())
                 .create();
@@ -321,12 +331,14 @@ public class MainApiController {
 							if(user.isPresent()) {
 								Users userDetail = user.get();
 								
+								FileMaster savedFile = fs.saveFile(imageFile, seq) ;
 								Comment comment = new Comment();
-								comment.setPlaceId(Integer.parseInt(commentForm.get("placeId")));
+								comment.setPlaceId(Integer.parseInt(commentForm.get("placeId")+""));
 								comment.setUserSeq(userDetail.getSeq());
-								comment.setRating(Double.parseDouble(commentForm.get("rating")));
-								comment.setComment(commentForm.get("comment"));
+								comment.setRating(Double.parseDouble(commentForm.get("rating")+""));
+								comment.setComment(Utils.replaceXSS(commentForm.get("comment")+""));
 								comment.setUseYn("Y");
+								comment.setImage(savedFile);
 								cs.insertComment(comment);
 								result.addProperty("status", "Y");
 							}else {

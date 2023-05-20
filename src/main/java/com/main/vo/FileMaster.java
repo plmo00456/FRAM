@@ -11,10 +11,11 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
+import javax.persistence.PostLoad;
 import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.springframework.beans.factory.annotation.Value;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -22,30 +23,21 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "comment")
-public class Comment {
-
+@Table(name = "file_master")
+public class FileMaster {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long seq;
-	@Column(name = "place_id")
-	private Integer placeId;
 	@Column(name = "user_seq")
 	private Long userSeq;
-	private String comment;
-	private double rating;
-	@OneToOne
-    @JoinColumn(name = "image_file_seq", referencedColumnName = "seq")
-    private FileMaster image;
-	@Column(name = "use_yn")
-	private String useYn;
+	@Column(name = "ori_filename")
+	private String oriFilename;
+	private String filepath;
+	private String filename;
+	@Transient
+	private String fullFilename;
 	@Column(name = "create_tm", updatable = false, insertable = false)
 	private LocalDateTime createTm;
 	@Column(name = "update_tm", updatable = false, insertable = false)
 	private LocalDateTime updateTm;
-	
-	@ManyToOne
-    @JoinColumn(name = "user_seq", referencedColumnName = "seq", insertable = false, updatable = false)
-    private Users user;
-	
 }

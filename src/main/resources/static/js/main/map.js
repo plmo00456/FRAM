@@ -17,6 +17,7 @@ var currentHoverOverlay = new Map(); // 현재 열려 있는 마우스오버 오
 var markers = [];   // 마커
 var lastMarker;		// 마지막으로 클릭한 마커
 var keywords = ['식당', '카페', '맛집', '음식', '요리', '레스토랑', '뷔페', '바', '퍼브', '이탈리아 음식', '한식', '중식', '일식', '양식', '빵집', '파스타', '피자', '스시', '라멘', '순두부', '김밥', '떡볶이', '치킨', '햄버거', '도넛', '아이스크림', '디저트 카페', '마라탕', '초밥', '피자'];
+var tmpImage;
 
 var infowindow = new kakao.maps.InfoWindow({
 	zIndex: 1
@@ -100,6 +101,9 @@ function mapInit() {
 		    }]
 		});
 		if (locYn) setUserMarker(latitude, longitude);
+		kakao.maps.event.addListener(map, 'zoom_changed', function(){
+			console.log(123);
+		})
 		kakao.maps.event.addListener(map, 'rightclick', function(mouseEvent) {
 			removeAllContextMenu();
 			
@@ -399,23 +403,23 @@ function getPlaceInfo(place, overlay) {
 				    			+ '            <div class="image-container first">';
 				    if(data.photo_list.length >= 1){
 				    content +=	  '                <div class="image">'
-							+ '                    <img src="' + data.photo_list[0].url + '" alt="thumbnail" onclick="imageLayerShow(this, \'' + data.name + '\', 0, ' + data.photo_list.length + ')">'
+							+ '                    <img src="' + data.photo_list[0].url + '" alt="thumbnail" onclick="imageLayerShow(this, 0, ' + data.photo_list.length + ', \'place_photo\')">'
 							+ '                </div>';
 				    }
 				    content +=	  '            </div>';
 				
 				    if(data.photo_list.length > 1){
-				        var secondContainerClass = data.photo_list.length == 2 ? "two-img" : ""; // If there are exactly two images, add the 'two-img' class
+				        var secondContainerClass = data.photo_list.length == 2 ? "two-img" : "";
 				        content += '            <div class="image-container second ' + secondContainerClass + '">'
 							+ '                <div class="row">';
 				        if(data.photo_list.length >= 2){
 				            content += '                    <div class="image">'
-				    		 + '                        <img src="' + data.photo_list[1].url + '" alt="thumbnail" onclick="imageLayerShow(this, \'' + data.name + '\', 1, ' + data.photo_list.length + ')">'
+				    		 + '                        <img src="' + data.photo_list[1].url + '" alt="thumbnail" onclick="imageLayerShow(this, 1, ' + data.photo_list.length + ', \'place_photo\')">'
 				    		 + '                    </div>';
 				        }
 				        if(data.photo_list.length >= 4){
 				            content += '                    <div class="image">'
-				    		 + '                        <img src="' + data.photo_list[3].url + '" alt="thumbnail" onclick="imageLayerShow(this, \'' + data.name + '\', 2, ' + data.photo_list.length + ')">'
+				    		 + '                        <img src="' + data.photo_list[3].url + '" alt="thumbnail" onclick="imageLayerShow(this, 2, ' + data.photo_list.length + ', \'place_photo\')">'
 				    		 + '                    </div>';
 				        }
 				        content +=	  '                </div>';
@@ -423,12 +427,12 @@ function getPlaceInfo(place, overlay) {
 				            content += '                <div class="row">';
 				            if(data.photo_list.length >= 3){
 				                content += '                    <div class="image">'
-				        		 + '                        <img src="' + data.photo_list[2].url + '" alt="thumbnail" onclick="imageLayerShow(this, \'' + data.name + '\', 3, ' + data.photo_list.length + ')">'
+				        		 + '                        <img src="' + data.photo_list[2].url + '" alt="thumbnail" onclick="imageLayerShow(this, 3, ' + data.photo_list.length + ', \'place_photo\')">'
 				        		 + '                    </div>';
 				            }
 				            if(data.photo_list.length >= 5){
 				                content += '                    <div class="image">'
-				        		 + '                        <img src="' + data.photo_list[4].url + '" alt="thumbnail" onclick="imageLayerShow(this, \'' + data.name + '\', 4, ' + data.photo_list.length + ')">'
+				        		 + '                        <img src="' + data.photo_list[4].url + '" alt="thumbnail" onclick="imageLayerShow(this, 4, ' + data.photo_list.length + ', \'place_photo\')">'
 				        		 + '                    </div>';
 				        		 
 				        		 if(data.photo_list.length > 5){
@@ -441,7 +445,7 @@ function getPlaceInfo(place, overlay) {
 				            
 							content += '<div class="images">';
 				            for(var i=5; i<data.photo_list.length; i++){
-								content += '<img src="' + data.photo_list[i].url + '" alt="thumbnail" onclick="imageLayerShow(this, \'' + data.name + '\', '+ i + ', ' + data.photo_list.length + ')">'
+								content += '<img src="' + data.photo_list[i].url + '" alt="thumbnail" onclick="imageLayerShow(this, '+ i + ', ' + data.photo_list.length + ', \'place_photo\')">'
 							}
 							content += '</div>';
 				        }
@@ -508,29 +512,31 @@ function getPlaceInfo(place, overlay) {
 	
 	
 			if (Object.keys(data.comment).length > 0 && data.comment.comments.length > 0) {
+				var currentImgCnt = -1;
 			    for (var i = 0; i < data.comment.count; i++) {
 			        content += '<div class="list">'
-			            + '<div class="image">';
-			        if (data.comment.comments[i].imagePath != undefined && data.comment.comments[i].imagePath != "") {
-			            content += '<img src="' + data.comment.comments[i].imagePath + '" alt="thumbnail" onclick="commentImageLayerShow(this)" >';
-			        }
-			        content += '</div>'
-			            + '<div class="cont-container">'
-			            + '<div class="top">'
-			            + '<div class="nickname">'
-			            + '<span class="rating">★' + data.comment.comments[i].rating + '</span>'
-			            + '<b>' + (data.comment.comments[i].user.nickname ? data.comment.comments[i].user.nickname : data.comment.comments[i].user.name) + '</b>'
-			            + '</div>'
-			            + '<div class="dt">' + timeAgo(data.comment.comments[i].createTm) + '</div>'
-			            + '</div>'
-			            + '<div class="cont">'
-			            + data.comment.comments[i].comment
-			            + '<div class="fade-out">'
-			            + '<button class="more-btn">더보기...</button>'
-			            + '</div>'
-			            + '</div>'
-			            + '</div>'
-			            + '</div>';
+					          + '<div class="cont-container">'
+					          + '<div class="top">'
+					          + '<div class="nickname">'
+					          + '<span class="rating">★' + data.comment.comments[i].rating + '</span>'
+					          + '<b>' + (data.comment.comments[i].user.nickname ? data.comment.comments[i].user.nickname : data.comment.comments[i].user.name) + '</b>'
+					          + '</div>'
+					          + '<div class="dt">' + timeAgo(data.comment.comments[i].createTm) + '</div>'
+					          + '</div>'
+					          + '<div class="cont">';
+					      
+					      if (data.comment.comments[i].image) {
+					          content += '<p style="width: 72%;">' + (data.comment.comments[i].comment + "").replace(/(\n|\r\n)/g, '<br>') + ' <span class="fade-out"><button class="more-btn" onclick="clickEventMoreBtnShow(this)">더보기...</button></span> </p>'
+					              + '<div class="image">'
+					              + '<img src="' + commonFileDir + data.comment.comments[i].image.filename + '" alt="thumbnail" onclick="imageLayerShow(this, '+ ++currentImgCnt + ', ' + data.comment.allCnt +', \'comment_photo\' )" >'
+					              + '</div>';
+					      } else {
+					          content += '<p style="width: 100%;">' + (data.comment.comments[i].comment + "").replace(/(\n|\r\n)/g, '<br>') + ' <span class="fade-out"><button class="more-btn" onclick="clickEventMoreBtnShow(this)">더보기...</button></span> </p>';
+					      }
+
+					      content += '</div>'
+						          + '</div>'
+						          + '</div>';
 			    }
 			}
 	
@@ -541,10 +547,23 @@ function getPlaceInfo(place, overlay) {
 			overlay.setContent(content);
 			
 			overlay.setMap(map);
-			
+			var currentLevel = map.getLevel();
 			var currentPosition = overlay.getPosition();
-	
-			map.setCenter(currentPosition);
+			var adjustLat = 0;
+			if(currentLevel == 2) adjustLat = 0.0005;
+			else if (currentLevel == 3) adjustLat = 0.001;
+			else adjustLat = 0.002;
+			var adjustPosition = new kakao.maps.LatLng(currentPosition.getLat() - adjustLat, currentPosition.getLng());
+			
+			map.setCenter(adjustPosition);
+			
+			var comments = document.querySelectorAll('.comment-container .cont');
+			comments.forEach(function(commentElement){				
+				if (commentElement.scrollHeight > commentElement.clientHeight)
+					commentElement.querySelector(".fade-out").classList.add("show");
+			})
+
+			
 			$(".custom-overlay").hide().fadeIn(300);
 			if(document.querySelector(".custom-overlay") != null){
 				// 마우스가 오버레이에 진입하면 원래의 스크롤 기능 비활성화
@@ -570,6 +589,16 @@ function getPlaceInfo(place, overlay) {
 					if(!getUserInfo("login")){
 						return;
 					}
+					var Toast = Swal.mixin({
+					    toast: true,
+					    position: 'center',
+					    showConfirmButton: false,
+					    timer: 2000,
+					    timerProgressBar: true,
+					    didOpen: (toast) => {
+						    toast.addEventListener('click', Swal.close)
+						}
+					});
 					Swal.fire({
 					  title: '<strong>' + data.name + '</strong>',
 					  html:
@@ -579,8 +608,10 @@ function getPlaceInfo(place, overlay) {
 								'<div class="rate"></div>'+
 							'</div>'+
 					  		'<div class="comment">'+
-						  		'<textarea id="comment-content">'+
+						  		'<textarea id="comment-content" oninput="this.classList.remove(\'required\')" maxlength="300">'+
 					  			'</textarea>'+
+					  			'<div class="ins-photo" onclick="uploadImage();"><i class="fa-regular fa-image"></i><div class="close-btn" onclick="removeImageBackground(event)">X</div></div>'+
+					  			'<input type="file" id="commentFileInput" onchange="setImageBackground(event)" accept="image/*" style="display: none;" />'+
 					  		'</div>'+
 					  '</div>',
 					  showCloseButton: true,
@@ -589,59 +620,59 @@ function getPlaceInfo(place, overlay) {
 					  cancelButtonColor: '#d33',
 					  confirmButtonText: '등록',
 					  cancelButtonText: '취소',
-					  focusConfirm: false
-					}).then(function() {
-						var Toast = Swal.mixin({
-						    toast: true,
-						    position: 'center',
-						    showConfirmButton: false,
-						    timer: 2000,
-						    timerProgressBar: true,
-						    didOpen: (toast) => {
-							    toast.addEventListener('click', Swal.close)
-							}
-						});
-						var comment = document.querySelector("#comment-content");
-						if(comment.value.trim() == ""){
-							Toast.fire({
-							    icon: 'error',
-							    title: "후기를 작성해주세요.",
-							});
-							return;
-						}
-						
-						$.ajax({
-							url: "/api/place/set-comment",
-							type: 'POST',
-							contentType: "application/json",
-							data: JSON.stringify({
+					  focusConfirm: false,
+					  preConfirm: () => {
+				        var comment = document.getElementById('comment-content');
+				        if (comment.value.trim() == "") {
+				            comment.classList.add("required");
+				            comment.focus();
+					        return false;
+				        }
+					}
+					}).then(function(result) {
+						if (result.isConfirmed) {
+							var comment = document.getElementById('comment-content');
+							var imageFile = document.querySelector(".comment-layer #commentFileInput");
+							var form = {
 								"placeId": place.id,
 								"rating": $(".comment-layer .rate-box .rate").rateYo("rating"),
-								"comment": comment.value
-							}),
-							success: function(data) {
-								if(data.status == "Y") {
-									Toast.fire({
-									    icon: 'success',
-									    title: "등록되었습니다.",
-									});
-									if (lastMarker) {
-									    kakao.maps.event.trigger(lastMarker, 'click');
+								"comment": comment.value,
+								"imageFile": imageFile
+							}
+							var formData = createFormDataFromObject(form);
+							console.log(formData);
+							$.ajax({
+								url: "/api/place/set-comment",
+								type: 'POST',
+								processData: false,
+							    contentType: false,
+							    cache: false,
+								data: formData,
+								success: function(data) {
+									if(data.status == "Y") {
+										Toast.fire({
+										    icon: 'success',
+										    title: "등록되었습니다.",
+										});
+										if (lastMarker) {
+										    kakao.maps.event.trigger(lastMarker, 'click');
+										}
+									} else {
+										Toast.fire({
+										    icon: 'error',
+										    title: data.msg,
+										});
 									}
-								} else {
+								},
+								error: function(error) {
 									Toast.fire({
 									    icon: 'error',
-									    title: data.msg,
+									    title: "오류가 발생하였습니다. 관리자에게 문의해 주세요.",
 									});
 								}
-							},
-							error: function(error) {
-								Toast.fire({
-								    icon: 'error',
-								    title: "오류가 발생하였습니다. 관리자에게 문의해 주세요.",
-								});
-							}
-						});
+							});
+						}
+						
 					});
 					
 					$(".comment-layer .rate-box .rate").rateYo({
@@ -695,27 +726,102 @@ function getPlaceInfo(place, overlay) {
 	});
 }
 
+function uploadImage() {
+  var fileInput = document.querySelector('#commentFileInput');
+  fileInput.click();
+}
+
+function setImageBackground(event) {
+  var imageContainer = document.querySelector(".comment-layer .ins-photo");
+  if(event.target.files.length > 0){
+	  var reader = new FileReader();
+	  tmpImage = event.target.files;
+	  
+	  reader.onload = function(e) {
+	    imageContainer.style.background = 'url("' + e.target.result + '")';
+	    imageContainer.style.backgroundSize = 'cover';
+	    imageContainer.style.backgroundPosition = 'center';
+	    imageContainer.classList.add("set");
+	  }
+	  reader.readAsDataURL(event.target.files[0]);
+  }else{
+	  event.preventDefault();
+	  event.target.files = tmpImage;
+  }
+}
+
+function removeImageBackground(e){
+	if (e.target !== e.currentTarget) return;
+	if (e.stopPropagation) e.stopPropagation();
+	
+	var imageContainer = document.querySelector(".comment-layer .ins-photo");
+	imageContainer.style.background = "#fff";
+	imageContainer.classList.remove("set");
+	document.querySelector("#commentFileInput").value = '';
+}
+
+function createFormDataFromObject(obj) {
+    const formData = new FormData();
+
+    for (const key in obj) {
+        if(obj.hasOwnProperty(key)) {
+            const value = obj[key];
+
+            if (value instanceof HTMLElement && (value.tagName === "INPUT" || value.tagName === "TEXTAREA" || value.tagName === "SELECT")) {
+                const tagName = value.tagName, type = value.type;
+
+                if (tagName === "INPUT") {
+                    if (type === "file") {
+                        if (value.files.length > 0) {
+                            for (let i = 0; i < value.files.length; i++) {
+								console.log(value.files[i]);
+                                formData.append(key, value.files[i]);
+                            }
+                        }
+                    } else if (type !== "checkbox" && type !== "radio" || value.checked) {
+                        formData.append(key, value.value);
+                    }
+                } else if (tagName === "TEXTAREA") {
+                    formData.append(key, value.value);
+                } else if (tagName === "SELECT") {
+                    const options = value.selectedOptions;
+
+                    for (let i = 0; i < options.length; i++) {
+                        formData.append(key, options[i].value);
+                    }
+                }
+            } else { // 일반 속성값일 경우
+                formData.append(key, value);
+            }
+        }
+    }
+
+    return formData;
+}
+
+
 // 더보기 버튼 활성함수
 function isTextTruncated(element) {
     const { scrollHeight, clientHeight } = element;
     return scrollHeight > clientHeight;
 }
 
-function moreBtnShow(element){
-	element.querySelector(".fade-out").classList.toggle("show");	
-}
-
-function addClickEventMoreBtnShow(element){
-	var moreBtn = element.querySelector(".more-btn");
-	moreBtn.addEventListener("click", function(){		
-		if(element.classList.contains("more")){
-			element.classList.remove("more");
-			moreBtn.innerHTML = "더보기...";
-		}else{
-			element.classList.add("more");
-			moreBtn.innerHTML = "간략히...";
-		}
-	});
+function clickEventMoreBtnShow(element){
+	var contElement = element.closest(".cont");
+	var listElement = element.closest(".list");
+	if(contElement.classList.contains("more")){
+		var commentContainer = document.querySelector(".custom-overlay .comment-container");
+		contElement.classList.remove("more");
+		element.innerHTML = "더보기...";
+		commentContainer.scroll({
+		  top: listElement.offsetTop-300,
+		  left: 0,
+		  behavior: 'smooth'
+		});
+	}else{
+		contElement.classList.add("more");
+		element.innerHTML = "간략히...";
+	}
 }
 
 // 영업 상태 리턴 함수
@@ -873,7 +979,7 @@ function removeAllContextMenu(){
 }
 
 // 이미지 확대 레이어
-function imageLayerShow(image, titleStr, current, allCnt){
+function imageLayerShow(image, current, allCnt, mode){
     var imgLayer = document.querySelector(".dim .image-layer");
     var img = document.querySelector(".dim .image-layer .image img");
     var newImg = new Image();
@@ -898,6 +1004,7 @@ function imageLayerShow(image, titleStr, current, allCnt){
 
         imgLayer.dataset.allcnt = allCnt;
         imgLayer.dataset.current = current;
+        imgLayer.dataset.mode = mode
         prevNextBtn();
     }
     
@@ -917,7 +1024,7 @@ function imageLayerShow(image, titleStr, current, allCnt){
 }
 
 // 댓글 이미지 확대 레이어
-function commentImageLayerShow(image){
+function imageLayerShow(image){
     var imgLayer = document.querySelector(".dim .image-layer");
     var img = document.querySelector(".dim .image-layer .image img");
     var newImg = new Image(); 
@@ -986,8 +1093,14 @@ function prevNextBtn(){
 
 // 이전, 다음 이미지 넘기기 함수
 function prevNextImage(i){
-	var imgs = document.querySelectorAll(".custom-overlay .image-list .image img, .custom-overlay .image-list .images img");
-	imgs[i].click();
+	var imgs;
+	var mode = document.querySelector(".dim .image-layer").dataset.mode;
+	if(mode == "place_photo")
+		imgs = document.querySelectorAll(".custom-overlay .image-list .image img, .custom-overlay .image-list .images img");
+	else if(mode == "comment_photo")
+		imgs = document.querySelectorAll(".custom-overlay .comment-container .image img");
+	if(imgs)
+		imgs[i].click();
 }
 
 // 내 정보 가져오기

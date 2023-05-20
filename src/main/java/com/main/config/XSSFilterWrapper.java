@@ -21,7 +21,6 @@ public class XSSFilterWrapper extends HttpServletRequestWrapper{
 	public XSSFilterWrapper(HttpServletRequest request) {
 		super(request);
 		try {
-			System.out.println("AAA : " + request.getContentType());
 			if(request.getMethod().equalsIgnoreCase("post") && ("application/json".equals(request.getContentType()) || "multipart/form-data".equals(request.getContentType()))) {
 				InputStream is = request.getInputStream();
 				this.rawData = replaceXSS(IOUtils.toByteArray(is));

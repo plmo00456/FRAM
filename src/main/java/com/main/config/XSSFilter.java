@@ -28,7 +28,6 @@ public class XSSFilter implements Filter{
 		HttpServletRequest req = (HttpServletRequest) request;
 	    HttpServletResponse res = (HttpServletResponse) response;
 	    
-		System.out.println(req.getContentType());
 		HttpServletRequestWrapper requestWrapper = new XSSFilterWrapper((HttpServletRequest)request);
 		chain.doFilter(requestWrapper, response);
 	}

@@ -55,8 +55,6 @@ public class AuthApiController {
 
 	@PostMapping("/login")
 	public ResponseEntity<JwtToken> loginSuccess(@RequestBody Map<String, String> loginForm, HttpServletResponse res, HttpServletRequest req) {
-		System.out.println(loginForm.get("userId"));
-		System.out.println(req.getParameter("userId"));
 		JwtToken token = us.login(loginForm.get("userId"), loginForm.get("password"), res);
 		return ResponseEntity.ok(token);
 	}

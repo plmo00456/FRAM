@@ -344,7 +344,7 @@
 	flex-direction: column;
 	max-height: 150px;
 	overflow-y: auto;
-	margin-top: 5px;
+	margin-top: 10px;
 }
 
 .custom-overlay .comment-container::-webkit-scrollbar {
@@ -377,12 +377,12 @@
 }
 
 .custom-overlay .comment-container .list .image {
-	width: 20%;
-	height: 50px;
 	display: flex;
 	justify-content: center;
 	align-items: center;
 	padding: 1%;
+    width: 26%;
+    
 }
 
 .custom-overlay .comment-container .list .image img {
@@ -390,6 +390,7 @@
 	height: 100%;
 	cursor: pointer;
 	transition: all 0.2s linear;
+    background: #fff;
 }
 .custom-overlay .comment-container .list .image img:hover{
 	filter: brightness(80%);
@@ -397,8 +398,9 @@
 }
 
 .custom-overlay .comment-container .list .cont-container {
-	width: 75%;
-	overflow: hidden;
+    width: 98%;
+    overflow: hidden;
+    padding-right: 2%;
 }
 
 .custom-overlay .comment-container .list .cont-container .top {
@@ -418,44 +420,63 @@
 }
 
 .custom-overlay .comment-container .list .cont-container .cont {
-	margin-left: 5px;
+    margin: 0 5px;
+    position: relative;
+    overflow: hidden;
+    height: 50px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    transition: all 0.4s ease;
+}
+
+.custom-overlay .comment-container .list .cont-container .cont p{
+	white-space: normal;
+	overflow-wrap: break-word;
 	position: relative;
-	overflow: hidden;
-	height: 35px;
+	font-size: .8rem;
 }
 
 .custom-overlay .comment-container .list .cont-container .cont.more {
 	overflow: unset;
 	height: max-content;
+	padding-bottom: 15px;
 }
 
-.custom-overlay .comment-container .list .cont-container .cont .fade-out
-	{
+.custom-overlay .comment-container .list .cont-container .cont .fade-out{
 	display: none;
 }
 
-.custom-overlay .comment-container .list .cont-container .cont .fade-out.show
-	{
-	position: absolute;
-	right: 0;
-	bottom: 0;
-	width: 31%;
-	height: .8rem;
+.custom-overlay .comment-container .list .cont-container .cont .fade-out.show{
 	display: flex;
-	justify-content: flex-end;
-	align-items: center;
-	background-image: linear-gradient(to left, #2f334a 75%, rgba(255, 255, 255, 0));
-	padding-bottom: 3px;
+	position: absolute;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(180deg, transparent, #2f334a 90%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 1.6rem;
+    width: 100%;
 }
 
-.custom-overlay .comment-container .list .cont-container .cont .fade-out .more-btn
-	{
-	background: #2f334a;
+.custom-overlay .comment-container .list .cont-container .cont.more .fade-out.show{
+	bottom: -20px;
+}
+
+.custom-overlay .comment-container .list .cont-container .cont .fade-out .more-btn{
+	background: transparent;
 	color: #fff;
 	border: none;
 	font-weight: bold;
 	padding: 0;
 	cursor: pointer;
+    padding: 10px;
+}
+
+.custom-overlay .comment-container .list .cont-container .cont .fade-out .more-btn:hover{
+	color:#e1e1e1;
+	text-decoration: underline;
 }
 
 .custom-overlay #rate-ins{
@@ -557,11 +578,15 @@
     border: none;
     width: 92%;
     outline: 1px solid #a5a5a5;
-    height: 100px;
+    height: 230px;
     padding: 13px;
     text-decoration: none;
     resize: none;
     color: #1f1f1f;
+}
+
+.comment-layer .comment textarea.required{
+	outline: 1.5px solid red;
 }
 
 .comment-layer .rate-box{
@@ -578,4 +603,49 @@
 
 .rate-box:hover .jq-ry-rated-group svg{
 	fill: #ffd8a5;
+}
+
+.comment-layer .comment{
+    position: relative;
+}
+
+.comment-layer .comment .ins-photo{
+    width: 70px;
+    height: 70px;
+    position: absolute;
+    left: 20px;
+    bottom: 20px;
+    outline: 1px dashed #a7a7a7;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.7rem;
+    color: #a7a7a7;
+}
+
+.comment-layer .comment .ins-photo.set i{
+	display:none;
+}
+
+.comment-layer .comment .ins-photo .close-btn{
+	display: none;
+}
+
+.comment-layer .comment .ins-photo.set .close-btn{
+	display: flex;
+    width: 15px;
+    height: 15px;
+    background: #555555ba;
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 12px;
+    justify-content: center;
+    align-items: center;
+    color: #dadada;
+    -webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
 }

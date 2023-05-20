@@ -39,6 +39,9 @@ public class Users implements UserDetails {
 	private String nickname;
 	private String email;
 	private String password;
+	@OneToOne
+	@JoinColumn(name = "profile_image_file_seq", referencedColumnName = "seq")
+    private FileMaster profileImage;
 	private String status;
 	private String provide;
 	@Column(name = "create_tm", updatable = false, insertable = false)

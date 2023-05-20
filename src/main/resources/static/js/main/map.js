@@ -15,6 +15,7 @@ var clusterer; // 클러스터
 var currentOverlay = new Map(); // 현재 열려 있는 오버레이
 var currentHoverOverlay = new Map(); // 현재 열려 있는 마우스오버 오버레이
 var markers = [];   // 마커
+var lastMarker;		// 마지막으로 클릭한 마커
 var keywords = ['식당', '카페', '맛집', '음식', '요리', '레스토랑', '뷔페', '바', '퍼브', '이탈리아 음식', '한식', '중식', '일식', '양식', '빵집', '파스타', '피자', '스시', '라멘', '순두부', '김밥', '떡볶이', '치킨', '햄버거', '도넛', '아이스크림', '디저트 카페', '마라탕', '초밥', '피자'];
 
 var infowindow = new kakao.maps.InfoWindow({
@@ -101,6 +102,9 @@ function mapInit() {
 		if (locYn) setUserMarker(latitude, longitude);
 		kakao.maps.event.addListener(map, 'rightclick', function(mouseEvent) {
 			removeAllContextMenu();
+			
+			if(getUserInfo() == undefined) return;
+			
 	        var menu = new kakao.maps.CustomOverlay({
 	          content: '<div class="map-context-menu"><div class="item" data-menu="1"><i class="fa-solid fa-location-crosshairs"></i>내 위치 지정</div></div>',
 	          position: mouseEvent.latLng,
@@ -141,10 +145,11 @@ function mapInit() {
 								   $.ajax({
 										url: '/api/set-user-location',
 										type: 'POST',
-										data: {
+										contentType: 'application/json',
+										data: JSON.stringify({
 											'lat' : mouseEvent.latLng.Ma,
 											'lon' : mouseEvent.latLng.La
-										},
+										}),
 										success: function(data) {
 											if(data.status == "Y"){
 												Toast.fire({
@@ -153,7 +158,8 @@ function mapInit() {
 												})
 										   	  	setUserMarker(mouseEvent.latLng.Ma, mouseEvent.latLng.La);
 										   	  	map.setCenter(new kakao.maps.LatLng(mouseEvent.latLng.Ma, mouseEvent.latLng.La));
-										   	  	map.setLevel(mapOption.level);												
+										   	  	map.setLevel(mapOption.level);
+										   	  	relocate();
 											}else{
 												Toast.fire({
 												    icon: 'error',
@@ -304,6 +310,7 @@ function createMarker(place) {
 		$(".dim").show();
 		$(".dim .loading-layer").show();
 		getOverlay(place, marker);
+		lastMarker = marker;
 	});	
 
     kakao.maps.event.addListener(marker, 'mouseover', function() {
@@ -321,9 +328,10 @@ function hoverOveray(place, marker){
 	$.ajax({
 		url: '/api/get-place-rating',
 		type: 'POST',
-		data: {
-			place_id: place.id
-		},
+		contentType: 'application/json',
+		data: JSON.stringify({
+			placeId: place.id
+		}),
 		success: function(data) {
 			var content = '<div class="hover-overlay">'
 						+ '<span class="title">' + place.place_name + '</span>';
@@ -370,9 +378,10 @@ function getPlaceInfo(place, overlay) {
 	$.ajax({
 		url: '/api/get-place-info',
 		type: 'POST',
-		data: {
-			place_id: place.id
-		},
+		contentType: 'application/json',
+		data: JSON.stringify({
+	        "placeId": place.id
+	    }),
 		success: function(data) {
 			var content = ''
 					    + '<div class="custom-overlay">'
@@ -510,7 +519,7 @@ function getPlaceInfo(place, overlay) {
 			            + '<div class="top">'
 			            + '<div class="nickname">'
 			            + '<span class="rating">★' + data.comment.comments[i].rating + '</span>'
-			            + '<b>' + data.comment.comments[i].user.nickname + '</b>'
+			            + '<b>' + (data.comment.comments[i].user.nickname ? data.comment.comments[i].user.nickname : data.comment.comments[i].user.name) + '</b>'
 			            + '</div>'
 			            + '<div class="dt">' + timeAgo(data.comment.comments[i].createTm) + '</div>'
 			            + '</div>'
@@ -558,6 +567,9 @@ function getPlaceInfo(place, overlay) {
 			
 			if(document.querySelector("#rate-ins")){
 				document.querySelector("#rate-ins").addEventListener("click", function(){
+					if(!getUserInfo("login")){
+						return;
+					}
 					Swal.fire({
 					  title: '<strong>' + data.name + '</strong>',
 					  html:
@@ -567,7 +579,7 @@ function getPlaceInfo(place, overlay) {
 								'<div class="rate"></div>'+
 							'</div>'+
 					  		'<div class="comment">'+
-						  		'<textarea>'+
+						  		'<textarea id="comment-content">'+
 					  			'</textarea>'+
 					  		'</div>'+
 					  '</div>',
@@ -577,13 +589,79 @@ function getPlaceInfo(place, overlay) {
 					  cancelButtonColor: '#d33',
 					  confirmButtonText: '등록',
 					  cancelButtonText: '취소',
-					  focusConfirm: false,
+					  focusConfirm: false
+					}).then(function() {
+						var Toast = Swal.mixin({
+						    toast: true,
+						    position: 'center',
+						    showConfirmButton: false,
+						    timer: 2000,
+						    timerProgressBar: true,
+						    didOpen: (toast) => {
+							    toast.addEventListener('click', Swal.close)
+							}
+						});
+						var comment = document.querySelector("#comment-content");
+						if(comment.value.trim() == ""){
+							Toast.fire({
+							    icon: 'error',
+							    title: "후기를 작성해주세요.",
+							});
+							return;
+						}
+						
+						$.ajax({
+							url: "/api/place/set-comment",
+							type: 'POST',
+							contentType: "application/json",
+							data: JSON.stringify({
+								"placeId": place.id,
+								"rating": $(".comment-layer .rate-box .rate").rateYo("rating"),
+								"comment": comment.value
+							}),
+							success: function(data) {
+								if(data.status == "Y") {
+									Toast.fire({
+									    icon: 'success',
+									    title: "등록되었습니다.",
+									});
+									if (lastMarker) {
+									    kakao.maps.event.trigger(lastMarker, 'click');
+									}
+								} else {
+									Toast.fire({
+									    icon: 'error',
+									    title: data.msg,
+									});
+								}
+							},
+							error: function(error) {
+								Toast.fire({
+								    icon: 'error',
+								    title: "오류가 발생하였습니다. 관리자에게 문의해 주세요.",
+								});
+							}
+						});
 					});
 					
 					$(".comment-layer .rate-box .rate").rateYo({
+						minValue: 0.5,
 						halfStar: true,
 						normalFill: "#d3d3d3",
-					  	ratedFill: "#ffb553"
+					  	ratedFill: "#ffb553",
+					  	rating: 0.5,
+					  	onSet: function (rating, rateYoInstance) {
+						    if (rating == 0) {
+						    	$(this).rateYo("rating", 0.5);
+							}
+						},
+						onClick: function (rating, evt) {
+						    if (rating == 0) {
+						      evt.preventDefault();
+						      evt.stopImmediatePropagation();
+						      $(this).rateYo("rating", 0.5);
+						    }
+						}
 					});
 					
 				});
@@ -598,8 +676,21 @@ function getPlaceInfo(place, overlay) {
 		},
 		error: function(error) {
 			$(".dim").hide();
-			$(".dim .loading-layer").hide();			
-			console.error('Error fetching image URL:', error);
+			$(".dim .loading-layer").hide();	
+			var Toast = Swal.mixin({
+			    toast: true,
+			    position: 'center',
+			    showConfirmButton: false,
+			    timer: 2000,
+			    timerProgressBar: true,
+			    didOpen: (toast) => {
+				    toast.addEventListener('click', Swal.close)
+				}
+			});		
+			Toast.fire({
+			    icon: 'error',
+			    title: "오류가 발생하였습니다. 관리자에게 문의해 주세요.",
+			});
 		}
 	});
 }
@@ -866,8 +957,6 @@ function commentImageLayerShow(image){
     newImg.src = image.getAttribute("src");
 }
 
-
-
 // 이전, 다음 버튼활성화 함수
 function prevNextBtn(){
 	var imgLayer = document.querySelector(".dim .image-layer");
@@ -908,6 +997,7 @@ function getUserInfo(mode){
 	$.ajax({
 		url: '/api/auth/getMe',
 		type: 'POST',
+		contentType: 'application/json',
 		async: false,
 		success: function(data) {
 			if(data.status == "Y"){

@@ -30,7 +30,7 @@ public class Comment {
 	@Column(name = "place_id")
 	private Integer placeId;
 	@Column(name = "user_seq")
-	private Integer userSeq;
+	private Long userSeq;
 	private String comment;
 	private double rating;
 	@Column(name = "image_path")

@@ -414,6 +414,7 @@
 .custom-overlay .comment-container .list .cont-container .top .rating {
 	color: #ffb553;
 	font-weight: 600;
+    margin-right: 5px;
 }
 
 .custom-overlay .comment-container .list .cont-container .cont {
@@ -458,12 +459,13 @@
 }
 
 .custom-overlay #rate-ins{
+    color: #ffc772;
     margin: auto 8px 0px auto;
     font-weight: 600;
 }
 
 .custom-overlay #rate-ins:hover{
-    color: gainsboro;
+    color: #ffe5bc;
 }
 
 .custom-overlay {

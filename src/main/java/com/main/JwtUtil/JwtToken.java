@@ -14,7 +14,6 @@ public class JwtToken {
 		this.accessToken = accessToken;
 		this.refreshToken = refreshToken;
 		this.accessExpire = accessExpire;
-		
 	}
  
     private String grantType;

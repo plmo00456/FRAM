@@ -5,6 +5,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.servlet.http.Cookie;
@@ -12,10 +13,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -53,7 +56,7 @@ public class MainApiController {
 	private final JwtTokenProvider jwtTokenProvider;
 	
 	@PostMapping("/get-place-info")
-	public ResponseEntity<String> GetPlaceInfo(@RequestParam(value="place_id", required = false) Integer placeId) {
+	public ResponseEntity<String> GetPlaceInfo(@RequestBody Map<String, Object> formData) {
 		Gson gson = new GsonBuilder()
                 .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeSerializer())
                 .create();
@@ -61,14 +64,14 @@ public class MainApiController {
 		result.addProperty("status", "N");
 		
 		try {
-			String urlStr = "https://place.map.kakao.com/main/v/" + placeId;
+			String urlStr = "https://place.map.kakao.com/main/v/" + formData.get("placeId");
 	        URL url = new URL(urlStr);
 	        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 	        connection.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
 			
             JsonObject data = gson.fromJson(new InputStreamReader(connection.getInputStream()), JsonObject.class);
             
-            urlStr = "https://place.map.kakao.com/photolist/v/" + placeId;
+            urlStr = "https://place.map.kakao.com/photolist/v/" + formData.get("placeId");
 	        url = new URL(urlStr);
 	        connection = (HttpURLConnection) url.openConnection();
 	        connection.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
@@ -182,7 +185,7 @@ public class MainApiController {
             // 로컬 평점
             JsonObject comment = new JsonObject();
             try {
-            	List<Comment> comments = cs.findCommentsByPlaceIdWithUser(placeId);
+            	List<Comment> comments = cs.findCommentsByPlaceIdWithUser(Integer.parseInt(formData.get("placeId")+""));
             	double ratingValue = 0;
             	for(int i=0; i<comments.size(); i++)
             		ratingValue += comments.get(i).getRating();
@@ -190,7 +193,7 @@ public class MainApiController {
             	
             	JsonArray jArrayComments = gson.toJsonTree(comments).getAsJsonArray();
             	comment.addProperty("count", comments.size());
-            	comment.addProperty("rating", ratingValue);
+            	comment.addProperty("rating", String.format("%.1f", ratingValue));
             	comment.add("comments", jArrayComments);
             	
             	result.add("comment", comment);
@@ -207,7 +210,7 @@ public class MainApiController {
 	}
 	
 	@PostMapping("/get-place-rating")
-	public ResponseEntity<String> GetRating(@RequestParam(value="place_id", required = false) Integer placeId) {
+	public ResponseEntity<String> GetRating(@RequestBody Map<String, Object> formData) {
 		Gson gson = new GsonBuilder()
                 .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeSerializer())
                 .create();
@@ -215,7 +218,7 @@ public class MainApiController {
 		result.addProperty("status", "N");
 		
 		try {
-			List<Comment> comments = cs.findCommentsByPlaceIdWithUser(placeId);
+			List<Comment> comments = cs.findCommentsByPlaceIdWithUser(Integer.parseInt(formData.get("placeId")+""));
 			double rating = 0;
 			for(int i=0; i<comments.size(); i++)
 				rating += comments.get(i).getRating();
@@ -223,7 +226,7 @@ public class MainApiController {
 			
 			JsonArray jArrayComments = gson.toJsonTree(comments).getAsJsonArray();
 			result.addProperty("count", comments.size());
-			result.addProperty("rating", rating);
+			result.addProperty("rating", String.format("%.1f", rating));
 			result.add("comment", jArrayComments);
 			result.addProperty("status", "Y");
 			
@@ -235,7 +238,7 @@ public class MainApiController {
 	}
 	
 	@PostMapping("/set-user-location")
-	public ResponseEntity<String> SetUserLocation(HttpServletRequest req, HttpServletResponse res, @RequestParam(value="lat", required = false) String lat, @RequestParam(value="lon", required = false) String lon) {
+	public ResponseEntity<String> SetUserLocation(HttpServletRequest req, HttpServletResponse res, @RequestBody Map<String, String> formData) {
 		Gson gson = new GsonBuilder()
                 .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeSerializer())
                 .create();
@@ -258,7 +261,7 @@ public class MainApiController {
 						if(seq != null && userInfo != null) {
 							Optional<Users> user = us.getUser(userInfo.getSeq());
 							if(user.isPresent()) {
-								uls.insertUpdateUserLocation(seq, lat, lon);
+								uls.insertUpdateUserLocation(seq, formData.get("lat"), formData.get("lon"));
 								result.addProperty("status", "Y");
 							}else {
 								throw new Exception("오류");
@@ -292,5 +295,70 @@ public class MainApiController {
 		}
 	}
 	
+	@PostMapping("/place/set-comment")
+	public ResponseEntity<String> setComment(HttpServletRequest req, HttpServletResponse res, @RequestBody Map<String, String> commentForm) {
+		Gson gson = new GsonBuilder()
+                .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeSerializer())
+                .create();
+		JsonObject result = new JsonObject();
+		Optional<Cookie> accessTokenCookie = Utils.getHttpOnlyCookie(req, "accessToken");
+		String accessToken = "";
+		result.addProperty("status", "N");
+		if (accessTokenCookie.isPresent()) {
+			try {
+				accessToken = accessTokenCookie.get().getValue();
+				Authentication auth = jwtTokenProvider.getAuthentication(accessToken);
+				boolean validateToken = jwtTokenProvider.validateToken(accessToken);
+				if (accessToken != null && validateToken) {
+					try {
+						auth = jwtTokenProvider.getAuthentication(accessToken);
+						
+						Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+						CustomUserDetails userInfo = ((CustomUserDetails)principal);
+						Long seq = userInfo.getSeq();
+						if(seq != null && userInfo != null) {
+							Optional<Users> user = us.getUser(userInfo.getSeq());
+							if(user.isPresent()) {
+								Users userDetail = user.get();
+								
+								Comment comment = new Comment();
+								comment.setPlaceId(Integer.parseInt(commentForm.get("placeId")));
+								comment.setUserSeq(userDetail.getSeq());
+								comment.setRating(Double.parseDouble(commentForm.get("rating")));
+								comment.setComment(commentForm.get("comment"));
+								comment.setUseYn("Y");
+								cs.insertComment(comment);
+								result.addProperty("status", "Y");
+							}else {
+								throw new Exception("오류");
+							}
+						}else {
+							throw new Exception("오류");
+						}
+						
+						return ResponseEntity.ok().header("Content-Type", "application/json").body(gson.toJson(result));
+					} catch (Exception e) {
+						e.printStackTrace();
+						result.addProperty("msg", "로그인이 만료되었습니다.<br>다시 로그인 해주세요.");
+						result.addProperty("code", "001");
+						e.fillInStackTrace();
+						return ResponseEntity.ok().header("Content-Type", "application/json").body(gson.toJson(result));
+					}
+				} else {
+					result.addProperty("msg", "잘못된 계정 정보입니다.<br>다시 로그인 해주세요.");
+					result.addProperty("code", "002");
+					return ResponseEntity.ok().header("Content-Type", "application/json").body(gson.toJson(result));
+				}
+			}catch(Exception e) {
+				result.addProperty("msg", "잘못된 계정 정보입니다.<br>다시 로그인 해주세요.");
+				result.addProperty("code", "002");
+				return ResponseEntity.ok().header("Content-Type", "application/json").body(gson.toJson(result));
+			}
+		}else {
+			result.addProperty("msg", "잘못된 계정 정보입니다.<br>다시 로그인 해주세요.");
+			result.addProperty("code", "002");
+			return ResponseEntity.ok().header("Content-Type", "application/json").body(gson.toJson(result));
+		}
+	}
 	
 }

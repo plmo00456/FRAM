@@ -1,5 +1,7 @@
 package com.main.service;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,9 +16,12 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.main.JwtUtil.JwtToken;
 import com.main.JwtUtil.JwtTokenProvider;
 import com.main.repository.UserRepository;
+import com.main.utils.Utils;
 import com.main.vo.Users;
 
 import lombok.RequiredArgsConstructor;
@@ -69,6 +74,41 @@ public class UsersService {
         JwtToken token = jwtTokenProvider.generateToken(authentication, res);
         
         return token;
+    }
+    
+    public JwtToken register(String id, String password, String name, HttpServletResponse res) {
+    	Utils utils = new Utils();
+    	
+    	Users user = userRepository.findById(id);
+        if (user != null) {
+        	JsonObject result = new JsonObject();
+        	result.addProperty("status", "N");
+        	result.addProperty("msg", "이미 사용중인 아이디 입니다.");
+        	utils.sendJsonResponse(res, result);
+        	return null;
+        }
+        
+        user = new Users();
+        user.setId(id);
+        user.setPassword(passwordEncoder.encode(password));
+        user.setName(name);
+        user.setNickname(name);
+        
+        createUser(user);
+        
+        user = userRepository.findById(id);
+        if (user == null) {
+        	JsonObject result = new JsonObject();
+        	result.addProperty("status", "N");
+        	result.addProperty("msg", "회원가입 중 오류가 발생했습니다. 관리자에게 문의해주세요");
+        	utils.sendJsonResponse(res, result);
+        	return null;
+        }else {
+        	UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(id, password);
+            Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+            JwtToken token = jwtTokenProvider.generateToken(authentication, res);        	
+        	return token;
+        }
     }
     
     public JwtToken emailLogin(Users userEntity, HttpServletResponse res) {

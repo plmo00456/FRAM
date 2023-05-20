@@ -23,6 +23,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.main.JwtUtil.CustomUserDetails;
 import com.main.JwtUtil.JwtToken;
@@ -53,9 +54,28 @@ public class AuthApiController {
 	private UsersService us;
 
 	@PostMapping("/login")
-	public ResponseEntity<JwtToken> loginSuccess(@RequestBody Map<String, String> loginForm, HttpServletResponse res) {
+	public ResponseEntity<JwtToken> loginSuccess(@RequestBody Map<String, String> loginForm, HttpServletResponse res, HttpServletRequest req) {
+		System.out.println(loginForm.get("userId"));
+		System.out.println(req.getParameter("userId"));
 		JwtToken token = us.login(loginForm.get("userId"), loginForm.get("password"), res);
 		return ResponseEntity.ok(token);
+	}
+	
+	@PostMapping("/register")
+	public ResponseEntity<String> registerSuccess(@RequestBody Map<String, String> registerForm, HttpServletResponse res) {
+		Gson gson = new Gson();
+		JwtToken token = us.register(registerForm.get("userId"), registerForm.get("password"),
+				registerForm.get("name"), res);
+		JsonObject result = new JsonObject();
+		if(token != null) {
+			JsonElement jToken = gson.toJsonTree(token);
+        	result.addProperty("status", "Y");        	
+        	result.add("token", jToken);
+		}else {
+			result.addProperty("status", "N");
+			result.addProperty("msg", "회원가입 중 오류가 발생했습니다. 관리자에게 문의해주세요");
+		}
+		return ResponseEntity.ok().header("Content-Type", "application/json").body(gson.toJson(result));
 	}
 
 	@PostMapping("/refresh")

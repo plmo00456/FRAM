@@ -30,10 +30,11 @@
     		success: function(data) {
     			document.cookie = 'accessToken=' + data.accessToken + ';path=/;max-age=' + data.accessExpire;
     			opener.parent.location.reload();
-    			self.close();
+   				self.close();
     		},
     		error: function(error) {
-    			alert("로그인 중 오류가 발생했습니다.");
+    			opener.parent.loadingClose();
+    			opener.parent.msgShow("로그인 중 오류가 발생했습니다.", "error");
     		}
     	});
     }

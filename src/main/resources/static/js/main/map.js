@@ -4,8 +4,8 @@
  * rating.css
  */
 
-var latitude = 37.566826;
-var longitude = 126.9786567;
+var latitude = 35.213830;
+var longitude = 126.843355;
 var mapInitChk = false; // 맵 초기화 여부
 var map; // map
 var ps; // map.ps 라이브러리
@@ -146,10 +146,13 @@ function mapInit() {
 									}
 								})
 							   if (result.isConfirmed) {
+								   $(".dim").show();
+								   $(".dim .loading-layer").show();
 								   $.ajax({
 										url: '/api/set-user-location',
 										type: 'POST',
 										contentType: 'application/json',
+										async: false,
 										data: JSON.stringify({
 											'lat' : mouseEvent.latLng.Ma,
 											'lon' : mouseEvent.latLng.La
@@ -178,6 +181,8 @@ function mapInit() {
 											})
 										}
 									});
+									$(".dim").hide();
+									$(".dim .loading-layer").hide();
 							   }
 							});
 							break;
@@ -329,10 +334,13 @@ function createMarker(place) {
 }
 
 function hoverOveray(place, marker){
+	$(".dim").show();
+	$(".dim .loading-layer").show();
 	$.ajax({
 		url: '/api/get-place-rating',
 		type: 'POST',
 		contentType: 'application/json',
+		async: false,
 		data: JSON.stringify({
 			placeId: place.id
 		}),
@@ -359,6 +367,8 @@ function hoverOveray(place, marker){
 			console.error('Error fetching place rating:', error);
 		}
 	});
+	$(".dim").hide();
+	$(".dim .loading-layer").hide();
 }
 
 function getOverlay(place, marker) {
@@ -403,7 +413,7 @@ function getPlaceInfo(place, overlay) {
 				    			+ '            <div class="image-container first">';
 				    if(data.photo_list.length >= 1){
 				    content +=	  '                <div class="image">'
-							+ '                    <img src="' + data.photo_list[0].url + '" alt="thumbnail" onclick="imageLayerShow(this, 0, ' + data.photo_list.length + ', \'place_photo\')">'
+							+ '                    <img referrerpolicy="no-referrer" src="' + data.photo_list[0].url + '" alt="thumbnail" onclick="imageLayerShow(this, 0, ' + data.photo_list.length + ', \'place_photo\')">'
 							+ '                </div>';
 				    }
 				    content +=	  '            </div>';
@@ -414,12 +424,12 @@ function getPlaceInfo(place, overlay) {
 							+ '                <div class="row">';
 				        if(data.photo_list.length >= 2){
 				            content += '                    <div class="image">'
-				    		 + '                        <img src="' + data.photo_list[1].url + '" alt="thumbnail" onclick="imageLayerShow(this, 1, ' + data.photo_list.length + ', \'place_photo\')">'
+				    		 + '                        <img referrerpolicy="no-referrer" src="' + data.photo_list[1].url + '" alt="thumbnail" onclick="imageLayerShow(this, 1, ' + data.photo_list.length + ', \'place_photo\')">'
 				    		 + '                    </div>';
 				        }
 				        if(data.photo_list.length >= 4){
 				            content += '                    <div class="image">'
-				    		 + '                        <img src="' + data.photo_list[3].url + '" alt="thumbnail" onclick="imageLayerShow(this, 2, ' + data.photo_list.length + ', \'place_photo\')">'
+				    		 + '                        <img referrerpolicy="no-referrer" src="' + data.photo_list[3].url + '" alt="thumbnail" onclick="imageLayerShow(this, 2, ' + data.photo_list.length + ', \'place_photo\')">'
 				    		 + '                    </div>';
 				        }
 				        content +=	  '                </div>';
@@ -427,12 +437,12 @@ function getPlaceInfo(place, overlay) {
 				            content += '                <div class="row">';
 				            if(data.photo_list.length >= 3){
 				                content += '                    <div class="image">'
-				        		 + '                        <img src="' + data.photo_list[2].url + '" alt="thumbnail" onclick="imageLayerShow(this, 3, ' + data.photo_list.length + ', \'place_photo\')">'
+				        		 + '                        <img referrerpolicy="no-referrer" src="' + data.photo_list[2].url + '" alt="thumbnail" onclick="imageLayerShow(this, 3, ' + data.photo_list.length + ', \'place_photo\')">'
 				        		 + '                    </div>';
 				            }
 				            if(data.photo_list.length >= 5){
 				                content += '                    <div class="image">'
-				        		 + '                        <img src="' + data.photo_list[4].url + '" alt="thumbnail" onclick="imageLayerShow(this, 4, ' + data.photo_list.length + ', \'place_photo\')">'
+				        		 + '                        <img referrerpolicy="no-referrer" src="' + data.photo_list[4].url + '" alt="thumbnail" onclick="imageLayerShow(this, 4, ' + data.photo_list.length + ', \'place_photo\')">'
 				        		 + '                    </div>';
 				        		 
 				        		 if(data.photo_list.length > 5){
@@ -445,7 +455,7 @@ function getPlaceInfo(place, overlay) {
 				            
 							content += '<div class="images">';
 				            for(var i=5; i<data.photo_list.length; i++){
-								content += '<img src="' + data.photo_list[i].url + '" alt="thumbnail" onclick="imageLayerShow(this, '+ i + ', ' + data.photo_list.length + ', \'place_photo\')">'
+								content += '<img referrerpolicy="no-referrer" src="' + data.photo_list[i].url + '" alt="thumbnail" onclick="imageLayerShow(this, '+ i + ', ' + data.photo_list.length + ', \'place_photo\')">'
 							}
 							content += '</div>';
 				        }
@@ -550,10 +560,18 @@ function getPlaceInfo(place, overlay) {
 			var currentLevel = map.getLevel();
 			var currentPosition = overlay.getPosition();
 			var adjustLat = 0;
-			if(currentLevel == 2) adjustLat = 0.0005;
-			else if (currentLevel == 3) adjustLat = 0.001;
-			else adjustLat = 0.002;
-			var adjustPosition = new kakao.maps.LatLng(currentPosition.getLat() - adjustLat, currentPosition.getLng());
+			var adjustLon = 0;
+			if(currentLevel == 2){
+				adjustLat = 0.0005;
+				adjustLon = 0.001;
+			}else if (currentLevel == 3){
+				adjustLat = 0.001;
+				adjustLon = 0.002;
+			}else{
+				adjustLat = 0.002;
+				adjustLon = 0.004;
+			}
+			var adjustPosition = new kakao.maps.LatLng(currentPosition.getLat() - adjustLat, currentPosition.getLng() - adjustLon);
 			
 			map.setCenter(adjustPosition);
 			
@@ -631,6 +649,8 @@ function getPlaceInfo(place, overlay) {
 					}
 					}).then(function(result) {
 						if (result.isConfirmed) {
+							$(".dim").show();
+							$(".dim .loading-layer").show();
 							var comment = document.getElementById('comment-content');
 							var imageFile = document.querySelector(".comment-layer #commentFileInput");
 							var form = {
@@ -640,13 +660,13 @@ function getPlaceInfo(place, overlay) {
 								"imageFile": imageFile
 							}
 							var formData = createFormDataFromObject(form);
-							console.log(formData);
 							$.ajax({
 								url: "/api/place/set-comment",
 								type: 'POST',
 								processData: false,
 							    contentType: false,
 							    cache: false,
+							    async: false,
 								data: formData,
 								success: function(data) {
 									if(data.status == "Y") {
@@ -665,12 +685,15 @@ function getPlaceInfo(place, overlay) {
 									}
 								},
 								error: function(error) {
+									console.log(error);
 									Toast.fire({
 									    icon: 'error',
-									    title: "오류가 발생하였습니다. 관리자에게 문의해 주세요.",
+									    title: "오류가 발생하였습니다.<br>관리자에게 문의해 주세요.",
 									});
 								}
 							});
+							$(".dim").hide();
+							$(".dim .loading-layer").hide();
 						}
 						
 					});
@@ -774,7 +797,6 @@ function createFormDataFromObject(obj) {
                     if (type === "file") {
                         if (value.files.length > 0) {
                             for (let i = 0; i < value.files.length; i++) {
-								console.log(value.files[i]);
                                 formData.append(key, value.files[i]);
                             }
                         }
@@ -1005,47 +1027,6 @@ function imageLayerShow(image, current, allCnt, mode){
         imgLayer.dataset.allcnt = allCnt;
         imgLayer.dataset.current = current;
         imgLayer.dataset.mode = mode
-        prevNextBtn();
-    }
-    
-    if(imgLayer.style.display == "none" || imgLayer.style.display == ""){
-        $(".dim").css("display", "flex").hide().fadeIn("fast", function(){
-            $(".dim .image-layer").css("display", "flex").hide().fadeIn(function(){
-				this.style.transition = "all 0.3s ease";
-	            this.style.WebkitTransition = "all 0.3s ease";
-	            this.style.MozTransition = "all 0.3s ease";
-	            this.style.MsTransition = "all 0.3s ease";
-	            this.style.OTransition = "all 0.3s ease";
-			});
-        });
-    }
-
-    newImg.src = image.getAttribute("src");
-}
-
-// 댓글 이미지 확대 레이어
-function imageLayerShow(image){
-    var imgLayer = document.querySelector(".dim .image-layer");
-    var img = document.querySelector(".dim .image-layer .image img");
-    var newImg = new Image(); 
-    newImg.onload = function() {
-        img.src = this.src;
-
-        var maxWidth = window.innerWidth * 0.9;
-        var maxHeight = window.innerHeight * 0.9;
-        var ratio = this.width / this.height;
-
-        var targetWidth = Math.min(maxWidth, this.width);
-        var targetHeight = targetWidth / ratio;
-
-        if (targetHeight > maxHeight) {
-            targetHeight = maxHeight;
-            targetWidth = targetHeight * ratio;
-        }
-
-        imgLayer.style.width = targetWidth + 'px';
-        imgLayer.style.height = targetHeight + 'px';
-        
         prevNextBtn();
     }
     

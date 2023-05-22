@@ -13,7 +13,7 @@ target/
 .springBeans
 .sts4-cache
 application-secure.properties
-
+keystore.p12
 ### IntelliJ IDEA ###
 .idea
 *.iws

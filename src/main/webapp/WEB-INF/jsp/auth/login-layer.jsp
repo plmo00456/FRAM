@@ -67,7 +67,10 @@
     naver_id_login.setPopup();
     naver_id_login.init_naver_id_login();
     
-    Kakao.init('${kakaoClientId}');
+    document.querySelector("#naver_id_login").addEventListener("click", function(){
+    	showLoadingLayer();
+    });
+    
     function kakaoLogin() {
         Kakao.Auth.login({
           success: function (response) {
@@ -78,6 +81,7 @@
               		url : "/api/auth/login/google",
               		type: 'POST',
               		contentType: "application/json",
+              		async: false,
               	    data: JSON.stringify({
               	        "userId": response.kakao_account.email,
               	        "password": response.id,
@@ -90,22 +94,27 @@
               			location.reload();
               		},
               		error: function(error) {
-              			alert("로그인 중 오류가 발생했습니다.");
+              			loadingLayer(0);
+              			msgShow("로그인 중 오류가 발생했습니다.", "error");
               		}
               	});
               },
               fail: function (error) {
-            	  alert("로그인 중 오류가 발생했습니다.");
+            	  loadingLayer(0);
+        			msgShow("로그인 중 오류가 발생했습니다.", "error");
               },
             })
           },
           fail: function (error) {
-            console.log(error)
+            console.log(error);
+            loadingLayer(0);
+  			msgShow("로그인 중 오류가 발생했습니다.", "error");
           },
         })
       }
     
     document.querySelector("#kako_id_login").addEventListener("click", function(){
+    	loadingLayer(1);
     	kakaoLogin();
     });
     
@@ -115,6 +124,7 @@
     		url : "/api/auth/login/google",
     		type: 'POST',
     		contentType: "application/json",
+    		async: false,
     	    data: JSON.stringify({
     	        "userId": responsePayload.email,
     	        "password": responsePayload.sub,
@@ -127,9 +137,11 @@
     			location.reload();
     		},
     		error: function(error) {
-    			alert("로그인 중 오류가 발생했습니다.");
+    			loadingLayer(0);
+      			msgShow("로그인 중 오류가 발생했습니다.", "error");
     		}
     	});
+        loadingLayer(0);
     }
     function parseJwt (token) {
         var base64Url = token.split('.')[1];
@@ -140,7 +152,17 @@
 
         return JSON.parse(jsonPayload);
     };
+    function loadingLayer(mode) {
+    	if(mode == "1"){    		
+	        $(".dim").show();
+	        $(".dim .loading-layer").show();
+    	}else if(mode == "0"){
+	        $(".dim").hide();
+	        $(".dim .loading-layer").hide();
+    	}
+    }
     window.onload = function(){
+    	Kakao.init('${kakaoClientId}');
 	    google.accounts.id.initialize({
 	      client_id: "${googleClientId}",
 	      callback: handleCredentialResponse
@@ -149,5 +171,9 @@
 	      document.getElementById("google_id_login"),
 	      { theme: "outline", size: "large", shape: "circle", type: "icon", width: 100 }
 	    );
+	    document.getElementById("google_id_login").addEventListener("click", function () {
+	    	loadingLayer(1);
+	        google.accounts.id.prompt(handleCredentialResponse);
+	    });
     }
 </script>

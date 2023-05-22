@@ -30,6 +30,7 @@ import com.main.JwtUtil.JwtToken;
 import com.main.JwtUtil.JwtTokenProvider;
 import com.main.service.UsersService;
 import com.main.utils.LocalDateTimeSerializer;
+import com.main.utils.LogUtil;
 import com.main.utils.Utils;
 import com.main.vo.Users;
 
@@ -52,15 +53,27 @@ public class AuthApiController {
 	private final JwtTokenProvider jwtTokenProvider;
 	@Autowired
 	private UsersService us;
+	
+	@Autowired
+	private LogUtil logUtil;
 
 	@PostMapping("/login")
 	public ResponseEntity<JwtToken> loginSuccess(@RequestBody Map<String, String> loginForm, HttpServletResponse res, HttpServletRequest req) {
+		try {
+			logUtil.setActivityLog("select", req, res);
+		}catch(Exception e) {}
+		
 		JwtToken token = us.login(loginForm.get("userId"), loginForm.get("password"), res);
 		return ResponseEntity.ok(token);
 	}
 	
 	@PostMapping("/register")
-	public ResponseEntity<String> registerSuccess(@RequestBody Map<String, String> registerForm, HttpServletResponse res) {
+	public ResponseEntity<String> registerSuccess(@RequestBody Map<String, String> registerForm, HttpServletResponse res, HttpServletRequest req) {
+		
+		try {
+			logUtil.setActivityLog("select, insert", req, res);
+		}catch(Exception e) {}
+		
 		Gson gson = new Gson();
 		JwtToken token = us.register(registerForm.get("userId"), registerForm.get("password"),
 				registerForm.get("name"), res);
@@ -71,13 +84,17 @@ public class AuthApiController {
         	result.add("token", jToken);
 		}else {
 			result.addProperty("status", "N");
-			result.addProperty("msg", "회원가입 중 오류가 발생했습니다. 관리자에게 문의해주세요");
+			result.addProperty("msg", "회원가입 중 오류가 발생했습니다.<br>관리자에게 문의해주세요");
 		}
 		return ResponseEntity.ok().header("Content-Type", "application/json").body(gson.toJson(result));
 	}
 
 	@PostMapping("/refresh")
 	public ResponseEntity<String> refreshAccessToken(HttpServletRequest req, HttpServletResponse res) {
+		try {
+			logUtil.setActivityLog("select", req, res);
+		}catch(Exception e) {}
+		
 		Gson gson = new Gson();
 		JsonObject result = new JsonObject();
 		result.addProperty("status", "N");
@@ -106,6 +123,10 @@ public class AuthApiController {
 	
 	@PostMapping("/getMe")
 	public ResponseEntity<String> getMe(HttpServletRequest req, HttpServletResponse res) {
+		try {
+			logUtil.setActivityLog("select", req, res);
+		}catch(Exception e) {}
+		
 		Gson gson = new GsonBuilder()
                 .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeSerializer())
                 .create();
@@ -153,14 +174,22 @@ public class AuthApiController {
 	}
 
 	@GetMapping(value="/oauth2/naver")
-	public ModelAndView NaverLoginCallback(ModelAndView mav, Model model) {
+	public ModelAndView NaverLoginCallback(ModelAndView mav, Model model, HttpServletRequest req, HttpServletResponse res) {
+		try {
+			logUtil.setActivityLog("select", req, res);
+		}catch(Exception e) {}
+		
 		mav.addObject("naverClientId", naverClientId);
 		mav.setViewName("auth/naver-callback");
         return mav;
     }
 	
 	@PostMapping(value="/login/naver")
-	public ResponseEntity<JwtToken> NaverLoginProc(@RequestBody Map<String, String> loginForm, HttpServletResponse res) {
+	public ResponseEntity<JwtToken> NaverLoginProc(@RequestBody Map<String, String> loginForm, HttpServletRequest req, HttpServletResponse res) {
+		try {
+			logUtil.setActivityLog("select", req, res);
+		}catch(Exception e) {}
+		
 		Users user = new Users();
 		user.setEmail(loginForm.get("userId"));
 		user.setPassword(loginForm.get("password"));
@@ -173,7 +202,11 @@ public class AuthApiController {
     }
 	
 	@PostMapping(value="/login/google")
-	public ResponseEntity<JwtToken> GoogleLoginProc(@RequestBody Map<String, String> loginForm, HttpServletResponse res) {
+	public ResponseEntity<JwtToken> GoogleLoginProc(@RequestBody Map<String, String> loginForm, HttpServletRequest req, HttpServletResponse res) {
+		try {
+			logUtil.setActivityLog("select", req, res);
+		}catch(Exception e) {}
+		
 		Users user = new Users();
 		user.setEmail(loginForm.get("userId"));
 		user.setPassword(loginForm.get("password"));

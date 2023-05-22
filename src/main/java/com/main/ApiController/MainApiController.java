@@ -35,6 +35,7 @@ import com.main.service.FileMasterService;
 import com.main.service.UsersLocationService;
 import com.main.service.UsersService;
 import com.main.utils.LocalDateTimeSerializer;
+import com.main.utils.LogUtil;
 import com.main.utils.Utils;
 import com.main.vo.Comment;
 import com.main.vo.FileMaster;
@@ -59,10 +60,18 @@ public class MainApiController {
 	@Autowired
 	private FileMasterService fs;
 	
+	@Autowired
+	private LogUtil logUtil;
+	
 	private final JwtTokenProvider jwtTokenProvider;
 	
 	@PostMapping("/get-place-info")
-	public ResponseEntity<String> GetPlaceInfo(@RequestBody Map<String, Object> formData) {
+	public ResponseEntity<String> GetPlaceInfo(@RequestBody Map<String, Object> formData, HttpServletRequest req, HttpServletResponse res) {
+		
+		try {
+			logUtil.setActivityLog("select", req, res);
+		}catch(Exception e) {}
+		
 		Gson gson = new GsonBuilder()
                 .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeSerializer())
                 .create();
@@ -220,7 +229,12 @@ public class MainApiController {
 	}
 	
 	@PostMapping("/get-place-rating")
-	public ResponseEntity<String> GetRating(@RequestBody Map<String, Object> formData) {
+	public ResponseEntity<String> GetRating(@RequestBody Map<String, Object> formData, HttpServletRequest req, HttpServletResponse res) {
+		
+		try {
+			logUtil.setActivityLog("select", req, res);
+		}catch(Exception e) {}
+		
 		Gson gson = new GsonBuilder()
                 .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeSerializer())
                 .create();
@@ -249,6 +263,11 @@ public class MainApiController {
 	
 	@PostMapping("/set-user-location")
 	public ResponseEntity<String> SetUserLocation(HttpServletRequest req, HttpServletResponse res, @RequestBody Map<String, String> formData) {
+		
+		try {
+			logUtil.setActivityLog("insert, update", req, res);
+		}catch(Exception e) {}
+		
 		Gson gson = new GsonBuilder()
                 .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeSerializer())
                 .create();
@@ -283,7 +302,7 @@ public class MainApiController {
 						return ResponseEntity.ok().header("Content-Type", "application/json").body(gson.toJson(result));
 					} catch (Exception e) {
 						e.printStackTrace();
-						result.addProperty("msg", "로그인이 만료되었습니다.<br>다시 로그인 해주세요.");
+						result.addProperty("msg", "오류가 발생했습니다.<br>관리자에게 문의해주세요.");
 						result.addProperty("code", "001");
 						e.fillInStackTrace();
 						return ResponseEntity.ok().header("Content-Type", "application/json").body(gson.toJson(result));
@@ -306,7 +325,12 @@ public class MainApiController {
 	}
 	
 	@PostMapping("/place/set-comment")
-	public ResponseEntity<String> setComment(HttpServletRequest req, HttpServletResponse res, @RequestParam HashMap commentForm, @RequestParam("imageFile") MultipartFile imageFile) {
+	public ResponseEntity<String> setComment(HttpServletRequest req, HttpServletResponse res, @RequestParam HashMap commentForm, @RequestParam(name="imageFile", required=false) MultipartFile imageFile) {
+		
+		try {
+			logUtil.setActivityLog("inesrt", req, res);
+		}catch(Exception e) {}
+		
 		Gson gson = new GsonBuilder()
                 .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeSerializer())
                 .create();
@@ -331,21 +355,25 @@ public class MainApiController {
 							if(user.isPresent()) {
 								Users userDetail = user.get();
 								
-								FileMaster savedFile = fs.saveFile(imageFile, seq) ;
 								Comment comment = new Comment();
 								comment.setPlaceId(Integer.parseInt(commentForm.get("placeId")+""));
 								comment.setUserSeq(userDetail.getSeq());
 								comment.setRating(Double.parseDouble(commentForm.get("rating")+""));
 								comment.setComment(Utils.replaceXSS(commentForm.get("comment")+""));
 								comment.setUseYn("Y");
-								comment.setImage(savedFile);
+								
+								if(imageFile != null) {									
+									FileMaster savedFile = fs.saveFile(imageFile, seq, res) ;
+									comment.setImage(savedFile);
+								}
+								
 								cs.insertComment(comment);
 								result.addProperty("status", "Y");
 							}else {
-								throw new Exception("오류");
+								throw new Exception("오류1");
 							}
 						}else {
-							throw new Exception("오류");
+							throw new Exception("오류2");
 						}
 						
 						return ResponseEntity.ok().header("Content-Type", "application/json").body(gson.toJson(result));

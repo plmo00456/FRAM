@@ -97,7 +97,7 @@ public class UsersService {
         if (user == null) {
         	JsonObject result = new JsonObject();
         	result.addProperty("status", "N");
-        	result.addProperty("msg", "회원가입 중 오류가 발생했습니다. 관리자에게 문의해주세요");
+        	result.addProperty("msg", "회원가입 중 오류가 발생했습니다.<br>관리자에게 문의해주세요");
         	utils.sendJsonResponse(res, result);
         	return null;
         }else {

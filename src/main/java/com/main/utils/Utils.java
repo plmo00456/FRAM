@@ -48,4 +48,21 @@ public class Utils {
 		}
 		return value;
 	}
+	
+	// 용량 byte로 변환	10MB => 10 * 1024 * 1024
+	public static long convertFileSizeToBytes(String fileSize) {
+        String sizeValue = fileSize.substring(0, fileSize.length() - 2);
+        String unit = fileSize.substring(fileSize.length() - 2).toUpperCase();
+
+        switch (unit) {
+            case "KB":
+                return Long.parseLong(sizeValue) * 1024;
+            case "MB":
+                return Long.parseLong(sizeValue) * 1024 * 1024;
+            case "GB":
+                return Long.parseLong(sizeValue) * 1024 * 1024 * 1024;
+            default:
+                return -1;
+        }
+    }
 }

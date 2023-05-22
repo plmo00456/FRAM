@@ -146,10 +146,13 @@
 			errTxt.classList.add("show");
 			return;
 		}
+		$(".dim").show();
+		$(".dim .loading-layer").show();
 		$.ajax({
 			url: "/api/auth/login",
 			type: 'POST',
 			contentType: "application/json",
+			async: false,
 			data: JSON.stringify({
 				"userId": document.querySelector(".login-layer input[name=userId]").value,
 				"password": document.querySelector(".login-layer input[name=password]").value
@@ -164,6 +167,8 @@
 				errTxt.classList.add("show");
 			}
 		});
+		$(".dim").hide();
+		$(".dim .loading-layer").hide();
 	});
 	document.querySelector("#register-btn").addEventListener("click", function() {
 		var idInput = document.querySelector(".register-layer input[name=userId]");
@@ -217,10 +222,13 @@
 			errTxt.classList.add("show");
 			return;
 		}
+		$(".dim").show();
+		$(".dim .loading-layer").show();
 		$.ajax({
 			url: "/api/auth/register",
 			type: 'POST',
 			contentType: "application/json",
+			async: false,
 			data: JSON.stringify({
 				"userId": idInput.value,
 				"password": pwInput.value,
@@ -245,6 +253,8 @@
 				errTxt.classList.add("show");
 			}
 		});
+		$(".dim").hide();
+		$(".dim .loading-layer").hide();
 	});
 	</c:if>
 	<c:if test="${userInfo ne null}">

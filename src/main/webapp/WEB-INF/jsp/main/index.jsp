@@ -5,7 +5,7 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>내주변맛집</title>
     
     <c:import url="/common/files" charEncoding="UTF-8"/>
@@ -13,6 +13,7 @@
 	<link href="/plugin/rateyo/jquery.rateyo.min.css" rel="stylesheet" type="text/css" />    
     <link href="/css/main/main.css" rel="stylesheet" type="text/css" />
     <link href="/css/main/map.css" rel="stylesheet" type="text/css" />
+    <link href="/css/main/m_main.css" rel="stylesheet" type="text/css" />
 
     <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoAppKey}&libraries=services,clusterer"></script>
     <script src="/plugin/star-rating/jstars.js"></script>
@@ -102,6 +103,18 @@
         // 맵 표시
         getUserLocation();
       });
+      
+      function loadingClse(){
+    	  $(".dim").hide();
+		  $(".dim .loading-layer").hide();
+      }
+      
+      function msgShow(text, mode){
+    	Swal.fire({
+			title: text,
+			icon: mode,
+		})
+      }
     </script>
   </head>
   <body>

@@ -413,7 +413,7 @@ function getPlaceInfo(place, overlay) {
 				    			+ '            <div class="image-container first">';
 				    if(data.photo_list.length >= 1){
 				    content +=	  '                <div class="image">'
-							+ '                    <img referrerpolicy="no-referrer" src="' + data.photo_list[0].url + '" alt="thumbnail" onclick="imageLayerShow(this, 0, ' + data.photo_list.length + ', \'place_photo\')">'
+							+ '                    <img referrerpolicy="no-referrer" src="/api/external-image?imageUrl=' + data.photo_list[0].url + '" alt="thumbnail" onclick="imageLayerShow(this, 0, ' + data.photo_list.length + ', \'place_photo\')">'
 							+ '                </div>';
 				    }
 				    content +=	  '            </div>';
@@ -424,12 +424,12 @@ function getPlaceInfo(place, overlay) {
 							+ '                <div class="row">';
 				        if(data.photo_list.length >= 2){
 				            content += '                    <div class="image">'
-				    		 + '                        <img referrerpolicy="no-referrer" src="' + data.photo_list[1].url + '" alt="thumbnail" onclick="imageLayerShow(this, 1, ' + data.photo_list.length + ', \'place_photo\')">'
+				    		 + '                        <img referrerpolicy="no-referrer" src="/api/external-image?imageUrl=' + data.photo_list[1].url + '" alt="thumbnail" onclick="imageLayerShow(this, 1, ' + data.photo_list.length + ', \'place_photo\')">'
 				    		 + '                    </div>';
 				        }
 				        if(data.photo_list.length >= 4){
 				            content += '                    <div class="image">'
-				    		 + '                        <img referrerpolicy="no-referrer" src="' + data.photo_list[3].url + '" alt="thumbnail" onclick="imageLayerShow(this, 2, ' + data.photo_list.length + ', \'place_photo\')">'
+				    		 + '                        <img referrerpolicy="no-referrer" src="/api/external-image?imageUrl=' + data.photo_list[3].url + '" alt="thumbnail" onclick="imageLayerShow(this, 2, ' + data.photo_list.length + ', \'place_photo\')">'
 				    		 + '                    </div>';
 				        }
 				        content +=	  '                </div>';
@@ -437,12 +437,12 @@ function getPlaceInfo(place, overlay) {
 				            content += '                <div class="row">';
 				            if(data.photo_list.length >= 3){
 				                content += '                    <div class="image">'
-				        		 + '                        <img referrerpolicy="no-referrer" src="' + data.photo_list[2].url + '" alt="thumbnail" onclick="imageLayerShow(this, 3, ' + data.photo_list.length + ', \'place_photo\')">'
+				        		 + '                        <img referrerpolicy="no-referrer" src="/api/external-image?imageUrl=' + data.photo_list[2].url + '" alt="thumbnail" onclick="imageLayerShow(this, 3, ' + data.photo_list.length + ', \'place_photo\')">'
 				        		 + '                    </div>';
 				            }
 				            if(data.photo_list.length >= 5){
 				                content += '                    <div class="image">'
-				        		 + '                        <img referrerpolicy="no-referrer" src="' + data.photo_list[4].url + '" alt="thumbnail" onclick="imageLayerShow(this, 4, ' + data.photo_list.length + ', \'place_photo\')">'
+				        		 + '                        <img referrerpolicy="no-referrer" src="/api/external-image?imageUrl=' + data.photo_list[4].url + '" alt="thumbnail" onclick="imageLayerShow(this, 4, ' + data.photo_list.length + ', \'place_photo\')">'
 				        		 + '                    </div>';
 				        		 
 				        		 if(data.photo_list.length > 5){
@@ -455,7 +455,7 @@ function getPlaceInfo(place, overlay) {
 				            
 							content += '<div class="images">';
 				            for(var i=5; i<data.photo_list.length; i++){
-								content += '<img referrerpolicy="no-referrer" src="' + data.photo_list[i].url + '" alt="thumbnail" onclick="imageLayerShow(this, '+ i + ', ' + data.photo_list.length + ', \'place_photo\')">'
+								content += '<img referrerpolicy="no-referrer" src="/api/external-image?imageUrl=' + data.photo_list[i].url + '" alt="thumbnail" onclick="imageLayerShow(this, '+ i + ', ' + data.photo_list.length + ', \'place_photo\')">'
 							}
 							content += '</div>';
 				        }

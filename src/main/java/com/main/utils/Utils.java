@@ -2,6 +2,12 @@ package com.main.utils;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import javax.servlet.http.Cookie;
@@ -64,5 +70,42 @@ public class Utils {
             default:
                 return -1;
         }
+    }
+	
+	// url 파라미터 제거
+	public static String removeParametersFromUrl(String urlString) throws Exception {
+		try {
+	        URL url = new URL(urlString);
+	        URI uri = new URI(url.getProtocol(), url.getUserInfo(), url.getHost(), url.getPort(), url.getPath(), null, null);
+	        return uri.toString();
+		}catch(Exception e) {
+	    	return urlString;
+	    }
+    }
+	
+	// url 인코딩
+	public static URL createEncodedUrl(String imageUrl) throws URISyntaxException, MalformedURLException {
+        URI uri = new URI(imageUrl);
+        String[] segments = uri.getRawPath().split("/");
+        StringBuilder encodedPathBuilder = new StringBuilder();
+
+        for (String segment : segments) {
+            if (!segment.isEmpty()) {
+                encodedPathBuilder.append("/");
+                encodedPathBuilder.append(URLEncoder.encode(segment, StandardCharsets.UTF_8).replaceAll("\\+", "%20"));
+            }
+        }
+
+        String encodedQuery = uri.getRawQuery() == null ? null : URLEncoder.encode(uri.getRawQuery(), StandardCharsets.UTF_8)
+                .replaceAll("\\+", "%20")
+                .replaceAll("%3D", "=")
+                .replaceAll("%26", "&");
+
+        URI encodedUri = new URI(
+                uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(),
+                encodedPathBuilder.toString(), encodedQuery, uri.getFragment()
+        );
+
+        return encodedUri.toURL();
     }
 }

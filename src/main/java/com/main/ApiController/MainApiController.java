@@ -1,5 +1,6 @@
 package com.main.ApiController;
 
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -14,9 +15,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -401,4 +408,28 @@ public class MainApiController {
 		}
 	}
 	
+	@GetMapping("/external-image")
+	public ResponseEntity<InputStreamResource> getExternalImage(@RequestParam(value = "imageUrl") String imageUrl){
+		try {
+			imageUrl = imageUrl.replace("https:", "http:");
+            URL url = Utils.createEncodedUrl(imageUrl);
+            InputStream inputStream = url.openStream();
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_TYPE, "image/jpeg");
+            return new ResponseEntity<>(new InputStreamResource(inputStream), headers, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                Resource errImageResource = new ClassPathResource("static/image/err-img.png");
+                InputStream is = errImageResource.getInputStream();
+                HttpHeaders responseHeaders = new HttpHeaders();
+                responseHeaders.set("Content-Type", "image/png");
+                return ResponseEntity.ok().headers(responseHeaders).body(new InputStreamResource(is));
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                throw new IllegalStateException("Failed to load error image.", ex);
+            }
+        }
+	}	
+    
 }

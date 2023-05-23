@@ -25,10 +25,10 @@
 					<div class="user-box" id="user-box">
 						<c:if test="${empty userInfo.nickname}">
 							<p class="user-icon">${fn:substring(userInfo.name,0,1)}</p>
-							<p class="user-nickname">${userInfo.name}</p>
+							<p class="user-nickname">${userInfo.nickname}</p>
 						</c:if>
 						<c:if test="${not empty userInfo.nickname}">
-							<p class="user-icon">${fn:substring(userInfo.nickname,0,1)}</p>
+							<p class="user-icon">${fn:substring(userInfo.name,0,1)}</p>
 							<p class="user-nickname">${userInfo.nickname}</p>
 						</c:if>
 						<nav id="nav-dropdown" class="nav-dropdown">

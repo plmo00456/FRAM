@@ -27,3 +27,9 @@ function timeAgo(serverTime) {
   }
   return Math.floor(seconds) + " 초 전";
 }
+
+function removeParam(urlString, paramName) {
+    let url = new URL(urlString);
+    url.searchParams.delete(paramName);
+    return url.toString();
+}

@@ -17,7 +17,6 @@ public class CommonModelAttributeInterceptor implements HandlerInterceptor {
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
         if (modelAndView != null) {
-        	System.out.println("fileDir : " + fileDir);
             modelAndView.addObject("fileDir", fileDir);
         }
     }

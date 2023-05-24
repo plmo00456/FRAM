@@ -11,4 +11,3 @@
 	if(isLoggedIn)
 		user = (CustomUserDetails) authentication.getPrincipal();
 %>
-asd

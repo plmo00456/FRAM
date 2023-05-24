@@ -1,5 +1,6 @@
 package com.main.vo;
 
+import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -88,4 +89,21 @@ public class Users implements UserDetails {
 		return false;
 	}
 	
+	public String getAllFields() {
+        StringBuilder result = new StringBuilder();
+
+        Field[] fields = this.getClass().getDeclaredFields();
+        for (Field field : fields) {
+            try {
+                field.setAccessible(true); // private 필드에 접근 가능하도록 설정
+                String fieldName = field.getName();
+                Object fieldValue = field.get(this);
+                result.append(fieldName).append(": ").append(fieldValue).append("\n");
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return result.toString();
+    }
 }

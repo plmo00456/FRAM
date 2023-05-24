@@ -11,14 +11,12 @@ public class TermsController {
 	
 	@GetMapping("/")
 	public ModelAndView terms(ModelAndView mav) {
-		System.out.println(1);
 		mav.setViewName("/terms/main");
 		return mav;
 	}
 
 	@GetMapping("/privacy")
 	public ModelAndView privacy(ModelAndView mav) {
-		System.out.println(2);
 		mav.setViewName("/terms/privacy");
 		return mav;
 	}

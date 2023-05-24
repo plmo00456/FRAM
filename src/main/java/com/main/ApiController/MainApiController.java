@@ -74,7 +74,6 @@ public class MainApiController {
 	
 	@PostMapping("/get-place-info")
 	public ResponseEntity<String> GetPlaceInfo(@RequestBody Map<String, Object> formData, HttpServletRequest req, HttpServletResponse res) {
-		
 		try {
 			logUtil.setActivityLog("select", req, res);
 		}catch(Exception e) {}
@@ -237,7 +236,6 @@ public class MainApiController {
 	
 	@PostMapping("/get-place-rating")
 	public ResponseEntity<String> GetRating(@RequestBody Map<String, Object> formData, HttpServletRequest req, HttpServletResponse res) {
-		
 		try {
 			logUtil.setActivityLog("select", req, res);
 		}catch(Exception e) {}
@@ -270,7 +268,6 @@ public class MainApiController {
 	
 	@PostMapping("/set-user-location")
 	public ResponseEntity<String> SetUserLocation(HttpServletRequest req, HttpServletResponse res, @RequestBody Map<String, String> formData) {
-		
 		try {
 			logUtil.setActivityLog("insert, update", req, res);
 		}catch(Exception e) {}
@@ -332,8 +329,8 @@ public class MainApiController {
 	}
 	
 	@PostMapping("/place/set-comment")
-	public ResponseEntity<String> setComment(HttpServletRequest req, HttpServletResponse res, @RequestParam HashMap commentForm, @RequestParam(name="imageFile", required=false) MultipartFile imageFile) {
-		
+	public ResponseEntity<String> setComment(HttpServletRequest req, HttpServletResponse res,
+			@RequestParam HashMap commentForm, @RequestParam(name="imageFile", required=false) MultipartFile imageFile) {
 		try {
 			logUtil.setActivityLog("inesrt", req, res);
 		}catch(Exception e) {}
@@ -371,7 +368,8 @@ public class MainApiController {
 								
 								if(imageFile != null) {									
 									FileMaster savedFile = fs.saveFile(imageFile, seq, res) ;
-									comment.setImage(savedFile);
+									if(savedFile != null)
+										comment.setImage(savedFile);
 								}
 								
 								cs.insertComment(comment);
@@ -409,7 +407,11 @@ public class MainApiController {
 	}
 	
 	@GetMapping("/external-image")
-	public ResponseEntity<InputStreamResource> getExternalImage(@RequestParam(value = "imageUrl") String imageUrl){
+	public ResponseEntity<InputStreamResource> getExternalImage(@RequestParam(value = "imageUrl") String imageUrl, HttpServletRequest req, HttpServletResponse res){
+		try {
+			logUtil.setActivityLog("select", req, res);
+		}catch(Exception e) {}
+		
 		try {
 			imageUrl = imageUrl.replace("https:", "http:");
             URL url = Utils.createEncodedUrl(imageUrl);

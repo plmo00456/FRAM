@@ -1,6 +1,7 @@
 package com.main.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.servlet.http.HttpServletResponse;
@@ -47,15 +48,12 @@ public class UsersService {
         return userRepository.findAll();
     }
 
-    public Users updateUser(Long seq, String name, String email) {
-        Users user = userRepository.findById(seq).orElseThrow(() -> new RuntimeException("User not found"));
-        user.setName(name);
-        user.setEmail(email);
+    public Users updateUser(Long seq, Users user) {
         return userRepository.save(user);
     }
 
-    public void deleteUser(Long id) {
-        userRepository.deleteById(id);
+    public void deleteUser(Long seq) {
+        userRepository.deleteById(seq);
     }
     
     public JwtToken login(String id, String password, HttpServletResponse res) {

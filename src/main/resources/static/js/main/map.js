@@ -121,6 +121,16 @@ function mapInit() {
 	
 	        if(document.querySelector(".map-context-menu")){
 	        	document.querySelector(".map-context-menu").addEventListener("click", function(e){
+					var Toast = Swal.mixin({
+					    toast: true,
+					    position: 'center',
+					    showConfirmButton: false,
+					    timer: 2000,
+					    timerProgressBar: true,
+					    didOpen: (toast) => {
+						    toast.addEventListener('click', Swal.close)
+						}
+					})
 					switch(e.target.dataset.menu){
 						case "1":
 							Swal.fire({
@@ -133,21 +143,10 @@ function mapInit() {
 							   cancelButtonColor: '#d33',
 							   confirmButtonText: '지정',
 							   cancelButtonText: '취소',
-							   
-							}).then(result => {
-								var Toast = Swal.mixin({
-								    toast: true,
-								    position: 'center',
-								    showConfirmButton: false,
-								    timer: 2000,
-								    timerProgressBar: true,
-								    didOpen: (toast) => {
-									    toast.addEventListener('click', Swal.close)
-									}
-								})
-							   if (result.isConfirmed) {
-								   $(".dim").show();
-								   $(".dim .loading-layer").show();
+							   preConfirm: function() {
+								   setTimeout(function(){				                    	
+				                    	Swal.showLoading();
+				                    },1);
 								   $.ajax({
 										url: '/api/set-user-location',
 										type: 'POST',
@@ -159,30 +158,28 @@ function mapInit() {
 										}),
 										success: function(data) {
 											if(data.status == "Y"){
-												Toast.fire({
-												    icon: 'success',
-												    title: '위치 변경이 완료되었습니다.',
-												})
-										   	  	setUserMarker(mouseEvent.latLng.Ma, mouseEvent.latLng.La);
-										   	  	map.setCenter(new kakao.maps.LatLng(mouseEvent.latLng.Ma, mouseEvent.latLng.La));
-										   	  	map.setLevel(mapOption.level);
-										   	  	relocate();
+												return true;
 											}else{
-												Toast.fire({
-												    icon: 'error',
-												    title: data.msg,
-												});
+												Swal.showValidationMessage(data.msg);
+				                    			swal.hideLoading();
 											}
 										},
 										error: function(error) {
-											Toast.fire({
-											    icon: 'error',
-											    title: error.msg,
-											})
+											Swal.showValidationMessage(error.responseJSON && error.responseJSON.msg ? error.responseJSON.msg : "오류가 발생하였습니다.<br>관리자에게 문의해 주세요.");
+				                			swal.hideLoading();
 										}
 									});
-									$(".dim").hide();
-									$(".dim .loading-layer").hide();
+							   },
+							}).then(result => {
+							   if (result.isConfirmed) {
+								   Toast.fire({
+									    icon: 'success',
+									    title: '위치 변경이 완료되었습니다.',
+									})
+							   	  	setUserMarker(mouseEvent.latLng.Ma, mouseEvent.latLng.La);
+							   	  	map.setCenter(new kakao.maps.LatLng(mouseEvent.latLng.Ma, mouseEvent.latLng.La));
+							   	  	map.setLevel(mapOption.level);
+							   	  	relocate();
 							   }
 							});
 							break;
@@ -628,8 +625,8 @@ function getPlaceInfo(place, overlay) {
 					  		'<div class="comment">'+
 						  		'<textarea id="comment-content" oninput="this.classList.remove(\'required\')" maxlength="300">'+
 					  			'</textarea>'+
-					  			'<div class="ins-photo" onclick="uploadImage();"><i class="fa-regular fa-image"></i><div class="close-btn" onclick="removeImageBackground(event)">X</div></div>'+
-					  			'<input type="file" id="commentFileInput" onchange="setImageBackground(event)" accept="image/*" style="display: none;" />'+
+					  			'<div class="ins-photo" onclick="uploadImage(\'commentFileInput\');"><i class="fa-regular fa-image"></i><div class="close-btn" onclick="removeImageBackground(event)">X</div></div>'+
+					  			'<input type="file" id="commentFileInput" onchange="setImageBackground(event, \'.comment-layer .ins-photo\')" accept="image/*" style="display: none;" />'+
 					  		'</div>'+
 					  '</div>',
 					  showCloseButton: true,
@@ -639,63 +636,60 @@ function getPlaceInfo(place, overlay) {
 					  confirmButtonText: '등록',
 					  cancelButtonText: '취소',
 					  focusConfirm: false,
-					  preConfirm: () => {
+					  preConfirm: function() {
+				    	setTimeout(function(){				                    	
+	                    	Swal.showLoading();
+	                    },1);
 				        var comment = document.getElementById('comment-content');
 				        if (comment.value.trim() == "") {
+							Swal.showValidationMessage("내용을 입력해주세요.");
 				            comment.classList.add("required");
 				            comment.focus();
+				            swal.hideLoading();
 					        return false;
 				        }
+
+						var comment = document.getElementById('comment-content');
+						var imageFile = document.querySelector(".comment-layer #commentFileInput");
+						var form = {
+							"placeId": place.id,
+							"rating": $(".comment-layer .rate-box .rate").rateYo("rating"),
+							"comment": comment.value,
+							"imageFile": imageFile
+						}
+						var formData = createFormDataFromObject(form);
+						$.ajax({
+							url: "/api/place/set-comment",
+							type: 'POST',
+							processData: false,
+						    contentType: false,
+						    cache: false,
+						    async: false,
+							data: formData,
+							success: function(data) {
+				                if (data.status === "Y") {
+				                    return true;
+				                } else {
+				                    Swal.showValidationMessage(data.msg);
+				                    swal.hideLoading();
+				                }
+				            },
+				            error: function(error) {
+				                Swal.showValidationMessage(error.responseJSON && error.responseJSON.msg ? error.responseJSON.msg : "오류가 발생하였습니다.<br>관리자에게 문의해 주세요.");
+				                swal.hideLoading();
+				            }
+						});
 					}
 					}).then(function(result) {
 						if (result.isConfirmed) {
-							$(".dim").show();
-							$(".dim .loading-layer").show();
-							var comment = document.getElementById('comment-content');
-							var imageFile = document.querySelector(".comment-layer #commentFileInput");
-							var form = {
-								"placeId": place.id,
-								"rating": $(".comment-layer .rate-box .rate").rateYo("rating"),
-								"comment": comment.value,
-								"imageFile": imageFile
-							}
-							var formData = createFormDataFromObject(form);
-							$.ajax({
-								url: "/api/place/set-comment",
-								type: 'POST',
-								processData: false,
-							    contentType: false,
-							    cache: false,
-							    async: false,
-								data: formData,
-								success: function(data) {
-									if(data.status == "Y") {
-										Toast.fire({
-										    icon: 'success',
-										    title: "등록되었습니다.",
-										});
-										if (lastMarker) {
-										    kakao.maps.event.trigger(lastMarker, 'click');
-										}
-									} else {
-										Toast.fire({
-										    icon: 'error',
-										    title: data.msg,
-										});
-									}
-								},
-								error: function(error) {
-									console.log(error);
-									Toast.fire({
-									    icon: 'error',
-									    title: "오류가 발생하였습니다.<br>관리자에게 문의해 주세요.",
-									});
-								}
+							Toast.fire({
+							    icon: 'success',
+							    title: "등록되었습니다.",
 							});
-							$(".dim").hide();
-							$(".dim .loading-layer").hide();
+							if (lastMarker) {
+							    kakao.maps.event.trigger(lastMarker, 'click');
+							}
 						}
-						
 					});
 					
 					$(".comment-layer .rate-box .rate").rateYo({
@@ -749,13 +743,13 @@ function getPlaceInfo(place, overlay) {
 	});
 }
 
-function uploadImage() {
-  var fileInput = document.querySelector('#commentFileInput');
+function uploadImage(id) {
+  var fileInput = document.querySelector('#'+id);
   fileInput.click();
 }
 
-function setImageBackground(event) {
-  var imageContainer = document.querySelector(".comment-layer .ins-photo");
+function setImageBackground(event, container) {
+  var imageContainer = document.querySelector(container);
   if(event.target.files.length > 0){
 	  var reader = new FileReader();
 	  tmpImage = event.target.files;
@@ -1082,45 +1076,4 @@ function prevNextImage(i){
 		imgs = document.querySelectorAll(".custom-overlay .comment-container .image img");
 	if(imgs)
 		imgs[i].click();
-}
-
-// 내 정보 가져오기
-function getUserInfo(mode){
-	var result;
-	var loginLayerBtn = document.querySelector(".login-layer-btn");
-	$.ajax({
-		url: '/api/auth/getMe',
-		type: 'POST',
-		contentType: 'application/json',
-		async: false,
-		success: function(data) {
-			if(data.status == "Y"){
-				result = data;
-			}else{
-				if(mode == "login"){					
-					if(loginLayerBtn){
-						loginLayerBtn.click();
-					}else{
-						document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-						document.cookie = 'accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-						window.location.hash = 'relogin';
-						window.location.reload();
-					}
-				}
-			}
-		},
-		error: function(error) {
-			if(mode == "login"){
-				if(loginLayerBtn){
-					loginLayerBtn.click();
-				}else{
-					document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-					document.cookie = 'accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-					window.location.hash = 'relogin';
-					window.location.reload();
-				}
-			}
-		}
-	});
-	return result;
 }

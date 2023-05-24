@@ -85,7 +85,8 @@
 					document.querySelector("#login-btn").click();
 			}else{
 				if(e.key == "Escape"){
-					document.querySelector(".custom-overlay .close-btn").click();
+					if(document.querySelector(".custom-overlay .close-btn"))
+						document.querySelector(".custom-overlay .close-btn").click();
 				}
 			}
     	});

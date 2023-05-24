@@ -270,18 +270,210 @@
 		    nav.classList.remove("is-open");
 		  }
 		});
-		document.querySelector("#logout-btn").addEventListener("click",function() {
+		document.querySelector("#logout-btn").parentElement.addEventListener("click",function() {
 			document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
 			document.cookie = 'accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
 			location.reload();
 		});
 		
-		document.querySelector("#mypage-btn").addEventListener("click", function(){
+		document.querySelector("#mypage-btn").parentElement.addEventListener("click", function(){
+			var userInfo = getUserInfo();
+			var Toast = Swal.mixin({
+			    toast: true,
+			    position: 'center',
+			    showConfirmButton: false,
+			    timer: 2000,
+			    timerProgressBar: true,
+			    didOpen: (toast) => {
+				    toast.addEventListener('click', Swal.close)
+				}
+			});
 			Swal.fire({
-				   title: '미완성',
-				   text: '빠른 시일내에 완성하겠습니다.',
-				   icon: 'warning',
-			})
+				  title: '<strong>내정보</strong>',
+				  html:
+					'<div class="profile-box">'+
+					    '<div class="profile-info">' +
+							'<div class="item"><span class="title">아이디</span> <input type="text" disabled value="' + isEmpty(userInfo.user.id,'') + '"></div>'+
+							'<div class="item"><span class="title">이메일</span> <input type="text" disabled value="' + isEmpty(userInfo.user.email,'') + '"></div>'+
+							'<div class="item"><span class="title">연동소셜</span> <input type="text" disabled value="' + provideKr(isEmpty(userInfo.user.provide,'')) + '"></div>'+
+							'<div class="item"><span class="title">이름</span> <input type="text" onChange="requiredClass(this)" maxlength="10" name="name" value="' + isEmpty(userInfo.user.name,'') + '" required></div>'+
+							'<div class="item"><span class="title">닉네임</span> <input type="text" onChange="requiredClass(this)" maxlength="10" name="nickname" value="' + isEmpty(userInfo.user.nickname,'') + '" required></div>'+
+					  	'</div>'+
+					  	'<div class="profile-image">'+
+					  		'<div class="profile-image-view" onclick="uploadImage(\'profile-image-input\');"><span class="user-profile-name"></span><span class="text">변경</span></div>'+
+					  		'<input type="file" accept="image/*" name="profile-image" id="profile-image-input" class="profile-image-input" onchange="setImageBackground(event, \'.profile-box .profile-image-view\'); document.querySelector(\'.profile-box .user-profile-name\').innerHTML = \'\';">'+
+				  		'</div>'+	
+				  	'</div>'
+				  	,
+				  didOpen: () => {
+					var img = Swal.getPopup().querySelector(".profile-image-view");
+
+				  	if(userInfo.user.profileImage && userInfo.user.profileImage.filename) img.style.background = "url('" + userInfo.user.profileImage.filepath + userInfo.user.profileImage.filename + "') center center / cover";
+				  	else{
+				  		var span = Swal.getPopup().querySelector(".user-profile-name");
+				  		span.classList.add("user-profile-name");
+				  		span.innerText = isEmpty(userInfo.user.name,'').substring(0,1);
+				  		
+				  		img.style.background = "#33691d";
+				  		img.style.color = "#fff";
+				  		img.style.fontSize = "5rem";
+				  	}
+				  },
+				  showCloseButton: true,
+				  showCancelButton: true,
+				  confirmButtonColor: '#6c55f7',
+				  cancelButtonColor: '#d33',
+				  confirmButtonText: '저장',
+				  cancelButtonText: '취소',
+				  focusConfirm: false,
+				  preConfirm: function() {
+					  	setTimeout(function(){				                    	
+	                    	Swal.showLoading();
+	                    },1);
+					    var name = Swal.getPopup().querySelector("input[name=name]");
+				        var nickname = Swal.getPopup().querySelector("input[name=nickname]");
+				        var profileImage = Swal.getPopup().querySelector("#profile-image-input");
+				        
+				        if (name.value.trim() === "") {
+				            name.classList.add("required");
+				            name.focus();
+				            Swal.showValidationMessage("이름을 입력해주세요.");
+				            swal.hideLoading();
+				            return false;
+				        }
+				        
+				        if (nickname.value.trim() === "") {
+				            nickname.classList.add("required");
+				            nickname.focus();
+				            Swal.showValidationMessage("닉네임을 입력해주세요.");
+				            return false;
+				        }
+				        
+				        var form = {
+				            name: name,
+				            nickname: nickname,
+				            "profile-image": profileImage
+				        };
+				        var formData = createFormDataFromObject(form);
+				        $.ajax({
+				            url: "/api/auth/update",
+				            type: "POST",
+				            processData: false,
+				            contentType: false,
+				            cache: false,
+				            async: false,
+				            data: formData,
+				            success: function(data) {
+				                if (data.status === "Y") {
+				                    return true;
+				                } else {
+				                    Swal.showValidationMessage(data.msg);
+				                    swal.hideLoading();
+				                }
+				            },
+				            error: function(error) {
+				                Swal.showValidationMessage(error.responseJSON && error.responseJSON.msg ? error.responseJSON.msg : "오류가 발생하였습니다.<br>관리자에게 문의해 주세요.");
+				                swal.hideLoading();
+				            }
+				        });
+					}
+				}).then(function(result) {
+					if (result.isConfirmed) {
+						Toast.fire({
+						    icon: 'success',
+						    title: "변경되었습니다.",
+						    didClose: function(){						    	
+					        	window.location.reload();
+						    }
+						});
+					}
+				});
 		})
 	</c:if>
 </script>
+<style>
+	.profile-box{
+		display: flex;
+	    justify-content: space-around;
+	    width: 100%;
+	}
+	.profile-box .profile-info{
+	}
+	.profile-box .profile-info .item{
+		display: flex;
+    	flex-direction: column;
+    	align-items: flex-start;
+   	    margin-bottom: 10px;
+	}
+	.profile-box .profile-info .item .title{
+	    font-size: .8rem;
+    	margin-bottom: 3px;
+	}
+	.profile-box .profile-info .item input{
+		border-radius: 5px;
+	    border: 1px solid #cdcdcd;
+	    font-size: 1rem;
+        padding: 5px;
+        color: #5c5c5c;
+	}
+	.profile-box .profile-info .item input.required{
+	    border: 1px solid red;
+	}
+	.profile-box .profile-info .item input.required:focus{
+	    outline: none;
+	}
+	.profile-box .profile-image{
+	    display: flex;
+	    justify-content: flex-start;
+	    align-items: center;
+	}
+	.profile-box .profile-image .profile-image-view{
+	    position: relative;
+	    border: 1px solid #979797;
+	    width: 140px;
+	    height: 140px;
+	    border-radius: 50%;
+	    display: flex;
+	    justify-content: center;
+	    align-items: center;
+	    overflow: hidden;
+	    cursor: pointer;
+        background-size: cover !important;
+	}
+	
+	.profile-box .profile-image .profile-image-view:before {
+	    content: '';
+	    position: absolute;
+	    bottom: -100px;
+	    width: 140px;
+	    height: 140px;
+	    border-radius: 0;
+	    background-color: rgba(0, 0, 0, 0.5);
+	    opacity: 0;
+	    transition: opacity .2s linear;
+	  }
+	 
+	  .profile-box .profile-image .profile-image-view:hover:before {
+	    opacity: 1;
+	  }
+	 
+	  .profile-box .profile-image .profile-image-view .text {
+	    color: white;
+	    font-size: 1rem;
+	    text-align: center;
+	    opacity: 0;
+	    transition: opacity .2s linear;
+        margin-top: 85px;
+        z-index: 1;
+        font-weight: 300;
+        position: absolute;
+	  }
+	 
+	  .profile-box .profile-image .profile-image-view:hover .text {
+	    opacity: 1;
+	  }
+	
+	.profile-box .profile-image .profile-image-input{
+		display: none;
+	}
+</style>

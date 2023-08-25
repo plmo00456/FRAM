@@ -1,6 +1,10 @@
-# 내주변 맛집 찾기 (스프링 부트 프로젝트)
+# 내주변 맛집 (FRAM)
 
 이 프로젝트는 스프링 부트 기반의 웹 어플리케이션입니다. Geolocation API와 카카오맵 API를 이용해 사용자의 현재 위치를 파악하고 주변의 맛집을 추천하는 사이트를 구현하였습니다. 사용자는 회원가입, 로그인 및 SNS 계정 연동을 통해 사이트에 가입하여, 식당 정보 확인 및 식당 후기 작성이 가능합니다.
+
+## [데모 사이트](http://fram.run.goorm.io)
+  - 구름 클라우드로 이전 
+  - ~~MS AZURE로 배포~~
 
 ## 시작하기
 
@@ -16,9 +20,10 @@
 ### 설치 및 실행
 
 1. 깃헙에서 프로젝트를 클론 및 프로젝트로 이동
-
-- git clone https://github.com/예시/내주변-맛집-찾기.git
-- cd 내주변-맛집-찾기
+    ```sh
+    $ git clone https://github.com/plmo00456/FRAM.git
+    $ cd FRAM
+    ```
 
 2. 서버 설정
 
@@ -52,8 +57,6 @@
 
 3. 프로젝트 빌드 및 실행
     ```sh
-    $ git clone https://github.com/plmo00456/FRAM.git
-    $ cd FRAM
     $ mvn spring-boot:run
     ```
 
